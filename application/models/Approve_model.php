@@ -45,6 +45,7 @@ class Approve_model extends CI_Model{
 
     public function get_active_status_id(){
         $statuses = $this->get_status();
+        
 
         foreach ($statuses as $status) {
             $status_name = strtolower(trim($status->product_status_name));
@@ -237,5 +238,15 @@ class Approve_model extends CI_Model{
         $this->db->where('approval_id', $approval_id);
         $query = $this->db->get();
         return $query->row() ? $query->row()->approval_code : null;
+    }
+
+
+    public function get_status_id_by_name($name){
+        $this->db->select('product_status_id');
+        $this->db->from('product_status');
+        $this->db->where('module', 'approval');
+        $this->db->where('LOWER(product_status_name)', strtolower($name));
+        $query = $this->db->get();
+        return $query->row() ? $query->row()->product_status_id : null;
     }
 }
