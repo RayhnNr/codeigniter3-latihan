@@ -10,6 +10,7 @@
             <thead>
                 <tr>
                     <th style="width: 50px">No</th>
+                    <th>Kode Jenis Perizinan</th>
                     <th>Nama Tipe</th>
                     <th style="width: 110px">Status</th>
                     <th style="width: 100px">Aksi</th>
@@ -19,17 +20,18 @@
                 <?php foreach ($list as $index => $row): ?>
                     <tr>
                         <td><?= $index + 1 ?></td>
-                        <td><?= html_escape($row->nama_tipe) ?></td>
+                        <td><?= html_escape($row->jenis_perizinan_code) ?></td>
+                        <td><?= html_escape($row->jenis_perizinan_name) ?></td>
                         <td>
-                            <?php if ((int) $row->status === 1): ?>
+                            <?php if ((int) $row->status === (int) $active_status_id): ?>
                                 <span class="badge badge-success">Aktif</span>
                             <?php else: ?>
                                 <span class="badge badge-secondary">Nonaktif</span>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-warning btn-edit" data-id="<?= (int) $row->id_perizinan_tipe ?>" title="Edit"><i class="fas fa-edit"></i></button>
-                            <a href="<?= site_url('perizinan_tipe/delete/' . (int) $row->id_perizinan_tipe) ?>" class="btn btn-sm btn-danger btn-delete" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')"><i class="fas fa-trash"></i></a>
+                            <button type="button" class="btn btn-sm btn-warning btn-edit" data-id="<?= (int) $row->jenis_perizinan_id ?>" title="Edit"><i class="fas fa-edit"></i></button>
+                            <a href="<?= site_url('jenis_perizinan/delete/' . (int) $row->jenis_perizinan_id) ?>" class="btn btn-sm btn-danger btn-delete" title="Hapus"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -52,4 +54,4 @@
     </div>
 </div>
 
-<?php $this->load->view('perizinan_tipe/js'); ?>
+<?php $this->load->view('jenis_perizinan/js'); ?>

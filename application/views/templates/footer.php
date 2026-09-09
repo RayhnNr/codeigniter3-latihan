@@ -40,6 +40,8 @@
 
 <!-- Daterangepicker (WAJIB setelah jQuery + Moment.js) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.1/daterangepicker.min.js"></script>
+<!-- Bootstrap Datetimepicker (setelah jQuery, Bootstrap, dan Moment.js) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>
 <!-- Bootstrap Datepicker (WAJIB setelah jQuery) -->
