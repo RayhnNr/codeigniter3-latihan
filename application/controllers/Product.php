@@ -81,6 +81,8 @@ class Product extends MY_Controller{
         $data['product_code_preview'] = $this->Product_model->generate_product_code();
         $data['mode']                 = 'create';
         $data['product']              = null;
+        $data['active_status_id']     = $this->Product_model->get_status_id_by_name('Aktif');
+        $data['inactive_status_id']   = $this->Product_model->get_status_id_by_name('Nonaktif');
 
         $this->load->view('templates/header', $data);
         $this->load->view('product/form', $data);
@@ -154,6 +156,8 @@ class Product extends MY_Controller{
         $data['product_status'] = $this->Product_model->get_status();
         $data['product']        = $product;
         $data['mode']           = 'edit';
+        $data['active_status_id']     = $this->Product_model->get_status_id_by_name('Aktif');
+        $data['inactive_status_id']   = $this->Product_model->get_status_id_by_name('Nonaktif');
 
         $this->load->view('templates/header', $data);
         $this->load->view('product/edit', $data);

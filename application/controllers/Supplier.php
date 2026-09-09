@@ -22,6 +22,9 @@ class Supplier extends MY_Controller {
         $data['status'] = $this->Supplier_model->get_status();
         $data['supplier_code_preview'] = $this->Supplier_model->generate_supplier_code();
 
+        $data['active_status_id'] = $this->Supplier_model->get_status_id_by_name('Aktif');
+        $data['inactive_status_id'] = $this->Supplier_model->get_status_id_by_name('Nonaktif');
+
         $this->load->view('templates/header', $data);
         $this->load->view('supplier/form', $data);
         $this->load->view('templates/footer');
@@ -67,6 +70,8 @@ class Supplier extends MY_Controller {
         $data['title'] = 'Edit Supplier';
         $data['status'] = $this->Supplier_model->get_status();
         $data['supplier'] = $supplier;
+        $data['active_status_id'] = $this->Supplier_model->get_status_id_by_name('Aktif');
+        $data['inactive_status_id'] = $this->Supplier_model->get_status_id_by_name('Nonaktif');
 
         $this->load->view('templates/header', $data);
         $this->load->view('supplier/edit', $data);

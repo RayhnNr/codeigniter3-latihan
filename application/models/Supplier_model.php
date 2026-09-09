@@ -42,6 +42,13 @@ class Supplier_model extends CI_Model
         return $this->db->get('product_status')->result();
     }
 
+    public function get_status_id_by_name($name){
+        $this->db->where('module', 'product');
+        $this->db->where('LOWER(product_status_name)', strtolower($name));
+        $row = $this->db->get('product_status')->row();
+        return $row ? $row->product_status_id : null;
+    }
+
     public function generate_supplier_code(){
         $this->db->like('code_supplier', 'SUP', 'after');
         $this->db->order_by('id', 'DESC');

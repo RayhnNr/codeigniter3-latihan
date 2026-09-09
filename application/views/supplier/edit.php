@@ -12,12 +12,11 @@
                 <small class="text-danger" id="error_nama_supplier"></small>
             </div>
             <div class="form-group">
-                <label>Status</label>
-                <select name="status" class="form-control select2">
-                    <?php foreach ($status as $item): ?>
-                        <option value="<?= $item->product_status_id ?>" <?= $supplier->status == $item->product_status_id ? 'selected' : '' ?>><?= $item->product_status_name ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <label for="status_toggle">Status</label>
+                <input type="hidden" name="status" id="status_hidden" value="<?= $supplier->status ?>">
+                <input type="checkbox" id="status_toggle" data-toggle="toggle" 
+                    data-on="Aktif" data-off="Nonaktif" 
+                    data-onstyle="success" data-offstyle="secondary" <?= $supplier->status == $active_status_id ? 'checked' : '' ?>>
                 <small class="text-danger" id="error_status"></small>
             </div>
             <a href="<?= base_url('supplier') ?>" class="btn btn-secondary">Batal</a>
@@ -31,6 +30,22 @@ window.addEventListener('load', function () {
         theme: 'bootstrap4',
         width: '100%'
     });
+
+    $('#status_toggle').bootstrapToggle({
+        on: 'Aktif',
+        off: 'Nonaktif',
+        onstyle: 'success',
+        offstyle: 'secondary'
+    });
+
+    $('#status_toggle').change(function() {
+        if($(this).is(':checked')) {
+            $('#status_hidden').val('<?= $active_status_id ?>');
+        } else {
+            $('#status_hidden').val('<?= $inactive_status_id ?>');
+        }
+    });
+
     $('#form-supplier').on('submit', function (event) {
         event.preventDefault();
         $('.text-danger').text('');

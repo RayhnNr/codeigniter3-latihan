@@ -112,7 +112,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
-                    <i class="fas fa-ticket-alt mr-2"></i> Detail TIcket 
+                    <i class="fas fa-ticket-alt mr-2"></i> Detail Ticket 
                     <span class="badge badge-light ml-2" id="modalTicketNumber"></span>
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>

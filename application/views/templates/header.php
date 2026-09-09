@@ -184,13 +184,42 @@
   <!-- Content Wrapper -->
   <div class="content-wrapper">
     <div class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="m-0"><?= isset($title) ? $title : 'Dashboard' ?></h1>
-          </div>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0"><?= isset($title) ? $title : 'Dashboard' ?></h1>
+                </div>
+                <div class="col-sm-6">
+                    <?php
+                    $segment1 = $this->uri->segment(1);
+                    $segment2 = $this->uri->segment(2);
+                    $segment3 = $this->uri->segment(3);
+                    ?>
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">
+                            <a href="<?= base_url('dashboard') ?>">Home</a>
+                        </li>
+
+                        <?php if ($segment1 && $segment1 !== 'dashboard'): ?>
+                            <li class="breadcrumb-item <?= !$segment2 ? 'active' : '' ?>">
+                                <?php if ($segment2): ?>
+                                    <a href="<?= base_url($segment1) ?>"><?= ucfirst(str_replace('_', ' ', $segment1)) ?></a>
+                                <?php else: ?>
+                                    <?= ucfirst(str_replace('_', ' ', $segment1)) ?>
+                                <?php endif; ?>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php if ($segment2): ?>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <?= ucfirst(str_replace('_', ' ', $segment2)) ?>
+                                <?= is_numeric($segment3) ? ' #' . $segment3 : '' ?>
+                            </li>
+                        <?php endif; ?>
+                    </ol>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <div class="content">

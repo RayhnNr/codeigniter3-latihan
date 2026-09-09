@@ -62,6 +62,9 @@ class Role extends CI_Controller {
             $data['permissions'],
             $data['is_unrestricted_role']
         );
+        $data['active_status_id']   = $this->Role_model->get_status_id_by_name('Aktif');
+        $data['inactive_status_id'] = $this->Role_model->get_status_id_by_name('Nonaktif');
+        
         $this->load->view('templates/header', $data);
         $this->load->view('role/form', $data);
         $this->load->view('templates/footer');
@@ -85,6 +88,9 @@ class Role extends CI_Controller {
             $data['permissions'],
             $data['is_unrestricted_role']
         );
+        $data['active_status_id']   = $this->Role_model->get_status_id_by_name('Aktif');
+        $data['inactive_status_id'] = $this->Role_model->get_status_id_by_name('Nonaktif');
+        
         $this->load->view('templates/header', $data);
         $this->load->view('role/form', $data);
         $this->load->view('templates/footer');

@@ -72,15 +72,11 @@
             </div>
 
             <div class="form-group">
-                <label>Status</label>
-                <select name="status" class="form-control form-select2">
-                    <option value="">-- Pilih Status --</option>
-                    <?php foreach ($product_status as $ps): ?>
-                        <option value="<?= $ps->product_status_id ?>" <?= ($product->status == $ps->product_status_id) ? 'selected' : '' ?>>
-                            <?= $ps->product_status_name ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <label for="status_toggle">Status</label>
+                <input type="hidden" name="status" id="status_hidden" value="<?= $product->status ?>">
+                <input type="checkbox" id="status_toggle" data-toggle="toggle" 
+                    data-on="Aktif" data-off="Nonaktif" 
+                    data-onstyle="success" data-offstyle="secondary" <?= $product->status == $active_status_id ? 'checked' : '' ?>>
                 <small class="text-danger" id="error_status"></small>
             </div>
 
@@ -101,6 +97,21 @@ window.addEventListener('load', function () {
     $('.form-select2').select2({
         theme: 'bootstrap4',
         width: '100%'
+    });
+
+    $('#status_toggle').bootstrapToggle({
+        on: 'Aktif',
+        off: 'Nonaktif',
+        onstyle: 'success',
+        offstyle: 'secondary'
+    });
+
+    $('#status_toggle').change(function() {
+        if($(this).is(':checked')) {
+            $('#status_hidden').val('<?= $active_status_id ?>');
+        } else {
+            $('#status_hidden').val('<?= $inactive_status_id ?>');
+        }
     });
 
     $('#form_edit_product').on('submit', function(e) {

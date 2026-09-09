@@ -22,6 +22,12 @@ class Role_model extends CI_Model{
         return $this->db->get($this->table)->row();
     }
 
+    public function get_status_id_by_name($name){
+        $this->db->where('module', 'product');
+        $this->db->where('product_status_name', $name);
+        return $this->db->get('product_status')->row()->product_status_id;
+    }
+
     public function insert($data){
         $data['created_at'] = date('Y-m-d H:i:s');
         $this->db->insert($this->table, $data);

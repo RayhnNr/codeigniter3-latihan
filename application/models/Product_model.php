@@ -146,6 +146,12 @@ class Product_model extends CI_Model
         return $this->db->get('product_status')->result();
     }
 
+    public function get_status_id_by_name($name){
+        $this->db->where('module', 'product');
+        $this->db->where('product_status_name', $name);
+        return $this->db->get('product_status')->row()->product_status_id;
+    }
+
     public function generate_product_code(){
         $this->db->like('product_code', 'PRD', 'after');
         $this->db->order_by('product_id', 'DESC');
