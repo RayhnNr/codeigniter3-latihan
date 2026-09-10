@@ -23,7 +23,6 @@ class Perizinan_model extends MY_Model{
         $query = $this->db->get($this->_table_name);
         $last = $query->row();
 
-
         if($last){
             $last_number = (int) substr($last->perizinan_no, -6);
             $next_number = $last_number + 1;
@@ -35,7 +34,6 @@ class Perizinan_model extends MY_Model{
 
         return 'PR'.$year.$month.$formatted;
     }
-
 
     public function get_status_id_by_name($name){
         $this->db->select('product_status_id');

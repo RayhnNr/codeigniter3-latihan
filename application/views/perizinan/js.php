@@ -1,5 +1,6 @@
 <script>
 window.addEventListener('load', function () {
+
 	if ($('#table-perizinan').length) {
 	$('#table-perizinan').DataTable({
 		processing: true,
@@ -73,7 +74,33 @@ window.addEventListener('load', function () {
 		});
 	});
 
+
 	if ($('#form-perizinan').length) {
+
+
+		function updatePerizinanFields() {
+			var jenisId = $('#jenis_perizinan_id').val();
+			var isSingleDay = ['6', '7', '8'].indexOf(jenisId) !== -1;
+			var isTimeBased = ['6', '7', '8'].indexOf(jenisId) !== -1;
+
+			$('#perizinan-fields > .col-lg-6').first().children().slice(1).toggleClass('d-none', !jenisId);
+			$('#perizinan-fields > .col-lg-6').last().toggleClass('d-none', !jenisId);
+			$('#perizinan-fields')
+				.toggleClass('perizinan-fields-pending', !jenisId)
+				.toggleClass('perizinan-single-day', isSingleDay)
+				.toggleClass('perizinan-no-time', !isTimeBased);
+			$('#btn-simpan').toggleClass('d-none', !jenisId);
+			$('#field_tanggal_selesai').toggleClass('d-none', isSingleDay);
+			$('#field_waktu').toggleClass('d-none', !isTimeBased);
+
+			if (isSingleDay) {
+				$('#tanggal_selesai').val('');
+			}
+
+			if (!isTimeBased) {
+				$('#jam_mulai, #jam_selesai').val('');
+			}
+		}
 
 		function parseDate(value) {
 			if (!value) {
@@ -99,9 +126,20 @@ window.addEventListener('load', function () {
 		function updateDuration() {
 			var startDate = parseDate($('#tanggal_mulai').val());
 			var endDate = parseDate($('#tanggal_selesai').val());
+			var durationInfo = $('#duration_info');
+			var isSingleDay = ['6', '7', '8'].indexOf($('#jenis_perizinan_id').val()) !== -1;
+
+			if (!$('#jenis_perizinan_id').val()) {
+				durationInfo.addClass('d-none').val('');
+				return;
+			}
+
+			if (isSingleDay && startDate) {
+				endDate = startDate;
+			}
 
 			if (!startDate || !endDate) {
-				$('#duration_info').addClass('d-none').removeClass('text-danger').html('');
+				durationInfo.removeClass('d-none text-danger').val('');
 				return;
 			}
 
@@ -121,61 +159,133 @@ window.addEventListener('load', function () {
 
 			$('#duration_info')
 				.removeClass('d-none text-danger')
-				.addClass('text-info')
-				.html('<i class="fas fa-info-circle"></i> Durasi: <strong>' + duration + ' hari</strong>.');
+				.val('Durasi: ' + duration + ' hari.');
 		}
 
-        var today = new Date();
-        var tomorrow = new Date();
-        tomorrow.setDate(today.getDate() + 1);
-        var stringBesok = formatDateToInput(tomorrow);
-        $('#tanggal_mulai').attr('min', stringBesok);
-        $('#tanggal_selesai').attr('min', stringBesok);
+		var today = new Date();
+		today.setHours(0, 0, 0, 0);
+		var stringHariIni = formatDateToInput(today);
+		$('#tanggal_mulai').attr('min', stringHariIni);
+		$('#tanggal_selesai').attr('min', stringHariIni);
 
-        $('#tanggal_mulai').on('change input', function() {
-            var startDate = parseDate($(this).val());
-            var todayCheck = new Date();
-            todayCheck.setHours(0, 0, 0, 0);
+		var isAutoCorrectingDates = false;
 
-            if (startDate && startDate < todayCheck) {
-                var nextDay = new Date();
-                nextDay.setDate(nextDay.getDate());
-                $(this).val(formatDateToInput(nextDay));
-                $(this).removeClass('is-invalid');
-                $('#error_tanggal_mulai').text('');
-            }
+		function validateTanggalMulai() {
 
-            if ($(this).val()) {
-                $('#tanggal_selesai').attr('min', $(this).val());
-                var endDate = parseDate($('#tanggal_selesai').val());
-                var currentStartDate = parseDate($(this).val());
-                if (endDate && currentStartDate && endDate < currentStartDate) {
-                    $('#tanggal_selesai').val($(this).val());
-                }
-            }
-        });
+			if (isAutoCorrectingDates) {
+				return;
+			}
 
-        $('#tanggal_selesai').on('change input', function() {
-            var startDate = parseDate($('#tanggal_mulai').val());
-            var endDate = parseDate($(this).val());
-            var todayCheck = new Date();
-            todayCheck.setHours(0, 0, 0, 0);
+			var input = $('#tanggal_mulai');
+			var startDate = parseDate(input.val());
 
-            if (endDate && endDate < todayCheck) {
-                var nextDay = new Date();
-                nextDay.setDate(nextDay.getDate());
-                $(this).val(formatDateToInput(nextDay));
-                $(this).removeClass('is-invalid');
-                $('#error_tanggal_selesai').text('');
-                endDate = parseDate($(this).val());
-            }
+			var todayCheck = new Date();
+			todayCheck.setHours(0, 0, 0, 0);
 
-            if (startDate && endDate && endDate < startDate) {
-                $(this).val($('#tanggal_mulai').val());
-                $(this).removeClass('is-invalid');
-                $('#error_tanggal_selesai').text('');
-            }
-        });
+			// Jika tanggal mulai sebelum hari ini
+			if (startDate && startDate < todayCheck) {
+				isAutoCorrectingDates = true;
+				input.val(formatDateToInput(todayCheck));
+				isAutoCorrectingDates = false;
+
+				// Tampilkan error setelah event datepicker selesai diproses.
+				setTimeout(function () {
+					input.addClass('is-invalid');
+					$('#error_tanggal_mulai').text(
+						'Tanggal mulai tidak boleh sebelum hari ini.'
+					);
+				}, 0);
+			} else if (startDate) {
+
+				// Kalau sudah valid, hapus error
+				input.removeClass('is-invalid');
+				$('#error_tanggal_mulai').text('');
+			}
+
+			// Atur tanggal minimal tanggal selesai
+			if (input.val()) {
+
+				$('#tanggal_selesai').attr('min', input.val());
+
+				var endDate = parseDate($('#tanggal_selesai').val());
+				var currentStartDate = parseDate(input.val());
+
+				if (endDate && currentStartDate && endDate < currentStartDate) {
+					isAutoCorrectingDates = true;
+					$('#tanggal_selesai').val(input.val());
+					isAutoCorrectingDates = false;
+
+					setTimeout(function () {
+						$('#tanggal_selesai').addClass('is-invalid');
+						$('#error_tanggal_selesai').text(
+							'Tanggal selesai tidak boleh sebelum tanggal mulai.'
+						);
+					}, 0);
+				}
+			}
+
+			updateDuration();
+		}
+
+		function validateTanggalSelesai() {
+
+			if (isAutoCorrectingDates) {
+				return;
+			}
+
+			var input = $('#tanggal_selesai');
+			var startDate = parseDate($('#tanggal_mulai').val());
+			var endDate = parseDate(input.val());
+
+			var todayCheck = new Date();
+			todayCheck.setHours(0, 0, 0, 0);
+
+			var tanggalSelesaiSebelumHariIni = endDate && endDate < todayCheck;
+
+			// Jika tanggal selesai sebelum hari ini
+			if (endDate && endDate < todayCheck) {
+
+				// Mental ke hari ini
+				isAutoCorrectingDates = true;
+				input.val(formatDateToInput(todayCheck));
+				isAutoCorrectingDates = false;
+
+				endDate = parseDate(input.val());
+
+			} else if (endDate) {
+
+				// Kalau sudah valid, hapus error
+				input.removeClass('is-invalid');
+				$('#error_tanggal_selesai').text('');
+			}
+
+			// Tanggal selesai tidak boleh sebelum tanggal mulai
+			if (startDate && endDate && endDate < startDate) {
+
+				isAutoCorrectingDates = true;
+				input.val($('#tanggal_mulai').val());
+				isAutoCorrectingDates = false;
+
+				setTimeout(function () {
+					input.addClass('is-invalid');
+					$('#error_tanggal_selesai').text(
+						'Tanggal selesai tidak boleh sebelum tanggal mulai.'
+					);
+				}, 0);
+			} else if (tanggalSelesaiSebelumHariIni) {
+				setTimeout(function () {
+					input.addClass('is-invalid');
+					$('#error_tanggal_selesai').text(
+						'Tanggal selesai tidak boleh sebelum hari ini.'
+					);
+				}, 0);
+			}
+
+			updateDuration();
+		}
+
+		$('#tanggal_mulai').on('input', validateTanggalMulai);
+		$('#tanggal_selesai').on('input', validateTanggalSelesai);
 
 		$('#form-perizinan').on('submit', function (event) {
 			event.preventDefault();
@@ -184,12 +294,18 @@ window.addEventListener('load', function () {
 
 			var form = this;
 			var isValid = true;
+			var jenisId = $('#jenis_perizinan_id').val();
+			var isSingleDay = ['6', '7', '8'].indexOf(jenisId) !== -1;
+			var isTimeBased = ['6', '7', '8'].indexOf(jenisId) !== -1;
 			var fields = [
 				{ selector: '#jenis_perizinan_id', message: 'Jenis perizinan wajib dipilih.' },
 				{ selector: '#tanggal_mulai', message: 'Tanggal mulai wajib diisi.' },
-				{ selector: '#tanggal_selesai', message: 'Tanggal selesai wajib diisi.' },
 				{ selector: '#alasan', message: 'Deskripsi atau alasan wajib diisi.' }
 			];
+
+			if (!isSingleDay) {
+				fields.splice(2, 0, { selector: '#tanggal_selesai', message: 'Tanggal selesai wajib diisi.' });
+			}
 
 			$.each(fields, function (_, field) {
 				var input = $(field.selector);
@@ -200,7 +316,7 @@ window.addEventListener('load', function () {
 				}
 			});
 
-			if ($('#jenis_perizinan_id').val() == '6') {
+			if (isTimeBased) {
 
 				var jamMulai = $('#jam_mulai');
 				var jamSelesai = $('#jam_selesai');
@@ -251,7 +367,7 @@ window.addEventListener('load', function () {
 			var tglMulai = $('#tanggal_mulai').val();
 			var tglSelesai = $('#tanggal_selesai').val();
 
-			if (tglMulai && tglSelesai && tglMulai > tglSelesai) {
+			if (!isSingleDay && tglMulai && tglSelesai && tglMulai > tglSelesai) {
 				$('#error_tanggal_selesai').text('Tanggal mulai tidak boleh lebih besar dari tanggal selesai.');
 				$('#tanggal_selesai').addClass('is-invalid');
 				isValid = false;
@@ -259,6 +375,14 @@ window.addEventListener('load', function () {
 
 			if (!isValid) {
 				return;
+			}
+
+			if (isSingleDay) {
+				$('#tanggal_selesai').val('');
+			}
+
+			if (!isTimeBased) {
+				$('#jam_mulai, #jam_selesai').val('');
 			}
 
 			Swal.fire({
@@ -306,28 +430,14 @@ window.addEventListener('load', function () {
 			});
 		});
 
-        $('#tombol-hapus').click(function(e){
-			e.preventDefault();
-			var deleteUrl = $(this).attr('href');
-
-			Swal.fire({
-				title: 'Hapus pengajuan ini?',
-				text: 'Data yang dihapus tidak dapat dikembalikan.',
-				icon: 'warning',
-				showCancelButton: true,
-				confirmButtonText: 'Ya, hapus',
-				cancelButtonText: 'Batal',
-				confirmButtonColor: '#d33',
-				reverseButtons: true
-			}).then(function (result) {
-				if (result.isConfirmed) {
-					window.location.href = deleteUrl;
-				}
-			});
-		});
+        
 
 		$('#form-perizinan input, #form-perizinan textarea').on('input change', function () {
 			var id = $(this).attr('id');
+			if (id === 'tanggal_mulai' || id === 'tanggal_selesai') {
+				return;
+			}
+
 			if ($(this).val()) {
 				$('#error_' + id).text('');
 				$(this).removeClass('is-invalid');
@@ -337,6 +447,14 @@ window.addEventListener('load', function () {
 		$('#jenis_perizinan_id').on('change', function () {
 			$('#error_jenis_perizinan_id').text('');
 			$(this).removeClass('is-invalid');
+			updatePerizinanFields();
+			updateDuration();
+		});
+
+		$('#tanggal_mulai').on('change input', function () {
+			if (['6', '7', '8'].indexOf($('#jenis_perizinan_id').val()) !== -1) {
+				$('#tanggal_selesai').val($(this).val());
+			}
 		});
 
 		$('#attachment').on('change', function () {
@@ -355,8 +473,13 @@ window.addEventListener('load', function () {
 
 		$('.form-select2').select2({
 			theme: 'bootstrap4',
-			width: '100%'
+			width: '100%',
+			placeholder: 'Pilih Jenis Perizinan',
+			allowClear: true
 		});
+
+		updatePerizinanFields();
+
 
 		$('#tanggal_mulai_picker, #tanggal_selesai_picker').datetimepicker({
 			format: 'YYYY-MM-DD',
@@ -379,6 +502,7 @@ window.addEventListener('load', function () {
 				close: 'fa fa-times'
 			}
 		});
+
 
 		$('#jam_mulai_picker, #jam_selesai_picker').datetimepicker({
 			format: 'HH:mm',
@@ -409,12 +533,12 @@ window.addEventListener('load', function () {
 				$(pickerId).datetimepicker('show');
 			}
 		});
-
 		$('#tanggal_mulai_picker').on('change.datetimepicker', function () {
-			updateDuration();
+			validateTanggalMulai();
 		});
-		$('#tanggal_selesai_picker').on('change.datetimepicker', updateDuration);
-		$('#tanggal_mulai, #tanggal_selesai').on('keyup input change', updateDuration);
+		$('#tanggal_selesai_picker').on('change.datetimepicker', function () {
+			validateTanggalSelesai();
+		});
 		updateDuration();
 
 	}

@@ -83,13 +83,13 @@ class Approve extends MY_Controller {
         $this->db->trans_begin();
 
         $header_approval = [
-            'approval_code'   => $this->Approve_model->generate_approval_code(),
-            'approval_name'   => $this->input->post('approval_name'),
-            'approval_menu'   => $this->input->post('approval_menu'),
-            'approval_description' => $this->input->post('approval_description'),
-            'approval_status' => $this->Approve_model->get_active_status_id(),
-            'created_by'      => $this->session->userdata('user_id'),
-            'created_at'      => date('Y-m-d H:i:s')
+            'approval_code'         => $this->Approve_model->generate_approval_code(),
+            'approval_name'         => $this->input->post('approval_name'),
+            'approval_menu'         => $this->input->post('approval_menu'),
+            'approval_description'  => $this->input->post('approval_description'),
+            'approval_status'       => $this->Approve_model->get_active_status_id(),
+            'created_by'            => $this->session->userdata('user_id'),
+            'created_at'            => date('Y-m-d H:i:s')
         ];
 
         $approval_id = $this->Approve_model->insert_header($header_approval);
@@ -132,8 +132,6 @@ class Approve extends MY_Controller {
 
         $this->session->set_flashdata('success', 'Data approval ' . $code . ' berhasil disimpan');
 
-        
-
         return $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode([
@@ -153,8 +151,6 @@ class Approve extends MY_Controller {
             return;
         }
         
-        
-
         $data['approval']       = $approval_data->header;
         $data['approval_users'] = $approval_data->detail;
         $data['menus']          = $this->Approve_model->get_menu();
@@ -184,7 +180,6 @@ class Approve extends MY_Controller {
         $this->load->view('templates/footer');
     }
 
-    // ===== UPDATE HEADER SAJA (dipanggil terakhir, setelah semua detail tersimpan) =====
     public function update($approval_id) {
         $this->form_validation->set_rules('approval_name', 'Nama Approval', 'required');
         $this->form_validation->set_rules('approval_menu', 'Menu', 'required|integer');

@@ -1,18 +1,34 @@
 <div class="card">
+    <style>
+        #perizinan-fields.perizinan-fields-pending > .col-lg-6:first-child > :not(.form-group),
+        #perizinan-fields.perizinan-fields-pending > .col-lg-6:last-child {
+            display: none;
+        }
+
+        #perizinan-fields.perizinan-single-day #field_tanggal_selesai,
+        #perizinan-fields.perizinan-no-time #field_waktu {
+            display: none;
+        }
+    </style>
     <div class="card-header">
         <h3 class="card-title"><i class="fas fa-file-signature mr-2"></i>Tambah Perizinan</h3>
     </div>
     <div class="card-body">
         <form action="<?= site_url('perizinan/save') ?>" method="post" enctype="multipart/form-data" id="form-perizinan" novalidate>
-            <div class="row">
+            <div id="perizinan-fields" class="row<?php
+                $selected_jenis_id = (int) set_value('jenis_perizinan_id');
+                echo empty($selected_jenis_id) ? ' perizinan-fields-pending' : '';
+                echo in_array($selected_jenis_id, [6, 7, 8], true) ? ' perizinan-single-day' : '';
+                echo !in_array($selected_jenis_id, [6, 7, 8], true) ? ' perizinan-no-time' : '';
+            ?>">
                 <div class="col-lg-6 pr-lg-4">
                     <div class="form-group">
                         <label for="jenis_perizinan_id">Jenis Perizinan <span class="text-danger">*</span></label>
-                        <select name="jenis_perizinan_id" id="jenis_perizinan_id" class="form-control form-select2">
-                            <option value="">-- Pilih Jenis Perizinan --</option>
+                        <select name="jenis_perizinan_id" id="jenis_perizinan_id" class="form-control form-select2" data-placeholder="Pilih Jenis Perizinan">
+                            <option value=""></option>
                             <?php foreach ($jenis_perizinan as $item): ?>
                                 <option value="<?= (int) $item->jenis_perizinan_id ?>" <?= set_select('jenis_perizinan_id', $item->jenis_perizinan_id) ?>>
-                                    <?= html_escape($item->jenis_perizinan_code . ' - ' . $item->jenis_perizinan_name) ?>
+                                    <?= html_escape($item->jenis_perizinan_name) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -29,7 +45,7 @@
                                 <small class="text-danger" id="error_tanggal_mulai"></small>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="field_tanggal_selesai">
                             <div class="form-group">
                                 <label for="tanggal_selesai">Tanggal Selesai <span class="text-danger">*</span></label>
                                 <div class="input-group date" id="tanggal_selesai_picker" data-target-input="nearest">
@@ -40,9 +56,9 @@
                             </div>
                         </div>
                     </div>
-                    <small class="text-info d-none mb-3" id="duration_info"></small>
-                    <div class="row">
-                        <div class="col-md-6">
+                    <input type="text" id="duration_info" class="form-control d-none mb-3" disabled readonly aria-label="Durasi">
+                    <div class="row" id="field_waktu">
+                        <div class="col-md-6" id="field_jam_mulai">
                             <div class="form-group">
                                 <label for="jam_mulai">Jam Mulai</label>
                                 <div class="input-group date" id="jam_mulai_picker" data-target-input="nearest">
@@ -52,7 +68,7 @@
                                 <small class="text-danger" id="error_jam_mulai"></small>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="field_jam_selesai">
                             <div class="form-group">
                                 <label for="jam_selesai">Jam Selesai</label>
                                 <div class="input-group date" id="jam_selesai_picker" data-target-input="nearest">
@@ -65,6 +81,10 @@
                     </div>
                 </div>
                 <div class="col-lg-6 pl-lg-4 border-lg-left">
+                    <div class="form-group">
+                        <label for="">Nama Karyawan</label>
+                        <input type="text" class="form-control mb-3" value="<?= isset($employee_name) ? $employee_name : '' ?>" disabled readonly>
+                    </div>
                     <div class="form-group">
                         <label for="alasan">Deskripsi / Alasan <span class="text-danger">*</span></label>
                         <textarea name="alasan" id="alasan" class="form-control" rows="6" placeholder="Tuliskan alasan pengajuan..."><?= set_value('alasan') ?></textarea>
@@ -92,7 +112,7 @@
             <hr class="my-4">
             <div class="d-flex justify-content-end">
                 <a href="<?= site_url('perizinan') ?>" class="btn btn-secondary mr-2"><i class="fas fa-arrow-left mr-1"></i> Batal</a>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Simpan Pengajuan</button>
+                <button type="submit" id="btn-simpan" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Simpan Pengajuan</button>
             </div>
         </form>
     </div>

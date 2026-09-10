@@ -53,10 +53,21 @@ class Perizinan extends MY_Controller {
     }
 
     public function create(){
+        $user_id = $this->session->userdata('user_id');
+
         $data['title'] = 'Tambah Perizinan';
         $data['jenis_perizinan'] = $this->Perizinan_model->get_jenis_perizinan();
         $data['status'] = $this->Perizinan_model->get_status();
         $data['pending_status_id'] = $this->Perizinan_model->get_status_id_by_name('Pending');
+
+        $this->db->select('users.employee_id, employees.employee_name');
+        $this->db->from('users');
+        $this->db->join('employees', 'employees.employee_id = users.employee_id', 'left');
+        $this->db->where('users.user_id', $user_id);
+        $user = $this->db->get()->row();
+
+        $data['employee_name'] = $user ? $user->employee_name : '-';
+
         $this->load->view('templates/header', $data);
         $this->load->view('perizinan/form', $data);
         $this->load->view('templates/footer');
@@ -66,11 +77,13 @@ class Perizinan extends MY_Controller {
     public function edit($id){
         $data['title'] = 'Edit Perizinan';
         $data['perizinan'] = $this->Perizinan_model->get($id, TRUE);
+
         if (!$data['perizinan']) {
             $this->session->set_flashdata('error', 'Perizinan tidak ditemukan.');
             redirect('perizinan');
             return;
         }
+        
         $data['jenis_perizinan'] = $this->Perizinan_model->get_jenis_perizinan();
         $data['status'] = $this->Perizinan_model->get_status();
         $data['pending_status_id'] = $this->Perizinan_model->get_status_id_by_name('Pending');
@@ -86,17 +99,24 @@ class Perizinan extends MY_Controller {
 
         $perizinan_id = $this->input->post('perizinan_id');
 
+        $jenis_perizinan_id = (int) $this->input->post('jenis_perizinan_id');
+        $is_single_day = in_array($jenis_perizinan_id, [6, 7, 8], TRUE);
+        $is_time_based = in_array($jenis_perizinan_id, [6, 7, 8], TRUE);
+
         $this->form_validation->set_rules('jenis_perizinan_id', 'Jenis Perizinan', 'required|numeric');
         $this->form_validation->set_rules('tanggal_mulai', 'Tanggal Mulai', 'required|trim');
-        $this->form_validation->set_rules('tanggal_selesai', 'Tanggal Selesai', 'required|trim');
         $this->form_validation->set_rules('alasan', 'Alasan', 'trim|required');
 
-        $jenis_perizinan_id = $this->input->post('jenis_perizinan_id');
-        $jam_mulai          = $this->input->post('jam_mulai', TRUE);
-        $jam_selesai        = $this->input->post('jam_selesai', TRUE);
+        if (!$is_single_day) {
+            $this->form_validation->set_rules('tanggal_selesai', 'Tanggal Selesai', 'required|trim');
+        } else {
+            $this->form_validation->set_rules('tanggal_selesai', 'Tanggal Selesai', 'trim');
+        }
 
-        // Cek jika Jenis Perizinan = 6/Get Pass, maka jam mulai dan berakhir harus wajib diisi
-        if ($jenis_perizinan_id == 6){
+        $jam_mulai = $this->input->post('jam_mulai', TRUE);
+        $jam_selesai = $this->input->post('jam_selesai', TRUE);
+
+        if ($is_time_based) {
             $this->form_validation->set_rules('jam_mulai', 'Jam Mulai', 'trim|required');
             $this->form_validation->set_rules('jam_selesai', 'Jam Selesai', 'trim|required');
         } else {
@@ -122,8 +142,8 @@ class Perizinan extends MY_Controller {
             }
         }
 
-        // Validasi jam khusus jenis "Get Pass"
-        if ($jenis_perizinan_id == 6) {
+        // Validasi jam untuk Get Pass, Pulang Awal, dan Datang Terlambat
+        if ($is_time_based) {
             $errors = [];
 
             if ($jam_mulai < '08:00' || $jam_mulai > '16:00') {
@@ -164,7 +184,7 @@ class Perizinan extends MY_Controller {
             $this->load->library('upload', $config);
 
             if ($this->upload->do_upload('attachment')) {
-                $upload_data          = $this->upload->data();
+                $upload_data         = $this->upload->data();
                 $attachment_filename = $upload_data['file_name'];
             } else {
                 $this->session->set_flashdata('error', $this->upload->display_errors());
@@ -195,17 +215,38 @@ class Perizinan extends MY_Controller {
         $tanggal_mulai   = $this->input->post('tanggal_mulai', TRUE);
         $tanggal_selesai = $this->input->post('tanggal_selesai', TRUE);
 
-        // Pengecekan tanggal, tanggal harus > tanggal sekarang
-        if (empty($perizinan_id) && $tanggal_mulai < date('Y-m-d')) {
+        // Field yang tidak berlaku untuk jenis perizinan disimpan sebagai NULL.
+        if ($is_single_day) {
+            $tanggal_selesai = null;
+        }
+
+        if (!$is_time_based) {
+            $jam_mulai = null;
+            $jam_selesai = null;
+        }
+
+        // Pengecekan tanggal, tanggal tidak boleh sebelum hari ini.
+        $tanggal_hari_ini = date('Y-m-d');
+        $errors = [];
+
+        if ($tanggal_mulai < $tanggal_hari_ini) {
+            $errors['tanggal_mulai'] = 'Tanggal mulai tidak boleh sebelum hari ini.';
+        }
+
+        if (!$is_single_day && $tanggal_selesai < $tanggal_hari_ini) {
+            $errors['tanggal_selesai'] = 'Tanggal selesai tidak boleh sebelum hari ini.';
+        }
+
+        if (!empty($errors)) {
             echo json_encode([
-                'status'  => 'error',
-                'message' => 'Tanggal mulai harus merupakan tanggal di masa depan.'
+                'status' => 'error',
+                'errors' => $errors
             ]);
             return;
         }
 
         // Pengecekan tanggal mulai harus <= tanggal selesai
-        if ($tanggal_mulai > $tanggal_selesai) {
+        if (!$is_single_day && $tanggal_mulai > $tanggal_selesai) {
             echo json_encode([
                 'status'  => 'error',
                 'message' => 'Tanggal mulai tidak boleh lebih besar dari tanggal selesai.'
@@ -215,8 +256,9 @@ class Perizinan extends MY_Controller {
 
         // Pengecekan tanggal yang bentrok
         $this->db->where('employee_id', $employee_id);
-        $this->db->where('tanggal_mulai <=', $tanggal_selesai);
-        $this->db->where('tanggal_selesai >=', $tanggal_mulai);
+        $tanggal_bentrok_selesai = $tanggal_selesai ?: $tanggal_mulai;
+        $this->db->where('tanggal_mulai <=', $tanggal_bentrok_selesai);
+        $this->db->where('COALESCE(tanggal_selesai, tanggal_mulai) >=', $tanggal_mulai);
 
         if (!empty($perizinan_id)) {
             $this->db->where('perizinan_id !=', $perizinan_id);
@@ -232,7 +274,7 @@ class Perizinan extends MY_Controller {
 
             if ($cek->status == $pending_status_id || $cek->status == $approved_status_id) {
                 $tanggal_mulai_bentrok   = date('d-m-Y', strtotime($cek->tanggal_mulai));
-                $tanggal_selesai_bentrok = date('d-m-Y', strtotime($cek->tanggal_selesai));
+                $tanggal_selesai_bentrok = date('d-m-Y', strtotime($cek->tanggal_selesai ?: $cek->tanggal_mulai));
 
                 echo json_encode([
                     'status'  => 'error',
@@ -258,16 +300,16 @@ class Perizinan extends MY_Controller {
             $data = [
                 'perizinan_no'       => $code_perizinan,
                 'jenis_perizinan_id' => $jenis_perizinan_id,
-                'employee_id'         => $employee_id,
-                'tanggal_pengajuan'   => date('Y-m-d'),
-                'tanggal_mulai'       => $tanggal_mulai,
-                'tanggal_selesai'     => $tanggal_selesai,
-                'jam_mulai'           => $jam_mulai,
-                'jam_selesai'          => $jam_selesai,
-                'alasan'               => $this->input->post('alasan', TRUE),
-                'attachment'           => $attachment_filename,
-                'status'                => $pending_status_id,
-                'created_by'           => $user_id,
+                'employee_id'        => $employee_id,
+                'tanggal_pengajuan'  => date('Y-m-d'),
+                'tanggal_mulai'      => $tanggal_mulai,
+                'tanggal_selesai'    => $tanggal_selesai,
+                'jam_mulai'          => $jam_mulai,
+                'jam_selesai'        => $jam_selesai,
+                'alasan'             => $this->input->post('alasan', TRUE),
+                'attachment'         => $attachment_filename,
+                'status'             => $pending_status_id,
+                'created_by'         => $user_id,
             ];
 
         // Edit
@@ -275,16 +317,16 @@ class Perizinan extends MY_Controller {
 
             $data = [
                 'jenis_perizinan_id' => $jenis_perizinan_id,
-                'employee_id'         => $employee_id,
-                'tanggal_mulai'       => $tanggal_mulai,
-                'tanggal_selesai'     => $tanggal_selesai,
-                'jam_mulai'           => $jam_mulai,
-                'jam_selesai'          => $jam_selesai,
-                'alasan'               => $this->input->post('alasan', TRUE),
-                'attachment'           => $attachment_filename,
-                'status'                => $existing->status,
-                'updated_by'           => $user_id,
-                'updated_at'           => date('Y-m-d H:i:s'),
+                'employee_id'        => $employee_id,
+                'tanggal_mulai'      => $tanggal_mulai,
+                'tanggal_selesai'    => $tanggal_selesai,
+                'jam_mulai'          => $jam_mulai,
+                'jam_selesai'        => $jam_selesai,
+                'alasan'             => $this->input->post('alasan', TRUE),
+                'attachment'         => $attachment_filename,
+                'status'             => $existing->status,
+                'updated_by'         => $user_id,
+                'updated_at'         => date('Y-m-d H:i:s'),
             ];
         }
 
