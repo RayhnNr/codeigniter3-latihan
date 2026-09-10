@@ -89,10 +89,20 @@ class Perizinan extends MY_Controller {
         $this->form_validation->set_rules('jenis_perizinan_id', 'Jenis Perizinan', 'required|numeric');
         $this->form_validation->set_rules('tanggal_mulai', 'Tanggal Mulai', 'required|trim');
         $this->form_validation->set_rules('tanggal_selesai', 'Tanggal Selesai', 'required|trim');
-        $this->form_validation->set_rules('jam_mulai', 'Jam Mulai', 'trim');
-        $this->form_validation->set_rules('jam_selesai', 'Jam Selesai', 'trim');
         $this->form_validation->set_rules('alasan', 'Alasan', 'trim|required');
-        // $this->form_validation->set_rules('attachment', 'Attachment', 'trim');
+
+        $jenis_perizinan_id = $this->input->post('jenis_perizinan_id');
+        $jam_mulai          = $this->input->post('jam_mulai', TRUE);
+        $jam_selesai        = $this->input->post('jam_selesai', TRUE);
+
+        // Cek jika Jenis Perizinan = 6/Get Pass, maka jam mulai dan berakhir harus wajib diisi
+        if ($jenis_perizinan_id == 6){
+            $this->form_validation->set_rules('jam_mulai', 'Jam Mulai', 'trim|required');
+            $this->form_validation->set_rules('jam_selesai', 'Jam Selesai', 'trim|required');
+        } else {
+            $this->form_validation->set_rules('jam_mulai', 'Jam Mulai', 'trim');
+            $this->form_validation->set_rules('jam_selesai', 'Jam Selesai', 'trim');
+        }
 
         if ($this->form_validation->run() == FALSE) {
             $this->session->set_flashdata('error', validation_errors());
@@ -105,9 +115,31 @@ class Perizinan extends MY_Controller {
             $existing = $this->Perizinan_model->get($perizinan_id);
             if (!$existing) {
                 echo json_encode([
-                    'status' => 'error',
+                    'status'  => 'error',
                     'message' => 'Data perizinan tidak ditemukan.'
                 ]);
+                return;
+            }
+        }
+
+        // Validasi jam khusus jenis "Get Pass"
+        if ($jenis_perizinan_id == 6) {
+            $errors = [];
+
+            if ($jam_mulai < '08:00' || $jam_mulai > '16:00') {
+                $errors['jam_mulai'] = 'Jam mulai harus berada dalam jam kantor (08:00 - 16:00).';
+            }
+
+            if ($jam_selesai < '08:00' || $jam_selesai > '16:00') {
+                $errors['jam_selesai'] = 'Jam selesai harus berada dalam jam kantor (08:00 - 16:00).';
+            }
+
+            if ($jam_mulai && $jam_selesai && $jam_mulai >= $jam_selesai) {
+                $errors['jam_selesai'] = 'Jam selesai harus lebih besar dari jam mulai.';
+            }
+
+            if (!empty($errors)) {
+                echo json_encode(['status' => 'error', 'errors' => $errors]);
                 return;
             }
         }
@@ -123,16 +155,16 @@ class Perizinan extends MY_Controller {
                 return;
             }
 
-            $config['upload_path'] = $upload_path;
-            $config['allowed_types'] = 'jpg|jpeg|png|pdf';
-            $config['max_size'] = 2048; // 2MB
-            $config['encrypt_name'] = TRUE;
+            $config['upload_path']      = $upload_path;
+            $config['allowed_types']    = 'jpg|jpeg|png|pdf';
+            $config['max_size']         = 2048; // 2MB
+            $config['encrypt_name']     = TRUE;
             $config['file_ext_tolower'] = TRUE;
 
             $this->load->library('upload', $config);
 
             if ($this->upload->do_upload('attachment')) {
-                $upload_data = $this->upload->data();
+                $upload_data          = $this->upload->data();
                 $attachment_filename = $upload_data['file_name'];
             } else {
                 $this->session->set_flashdata('error', $this->upload->display_errors());
@@ -144,7 +176,6 @@ class Perizinan extends MY_Controller {
             // mode EDIT, tidak upload file baru -> pertahankan attachment lama
             $attachment_filename = $existing ? $existing->attachment : null;
         }
-
 
         // Mengambil employee dari table users
         $user_id = $this->session->userdata('user_id');
@@ -161,30 +192,28 @@ class Perizinan extends MY_Controller {
             return;
         }
 
-
-        $tanggal_mulai = $this->input->post('tanggal_mulai', TRUE);
+        $tanggal_mulai   = $this->input->post('tanggal_mulai', TRUE);
         $tanggal_selesai = $this->input->post('tanggal_selesai', TRUE);
 
-
-        // Pengecakan tanggal, tanggal harus > tanggal sekarang
+        // Pengecekan tanggal, tanggal harus > tanggal sekarang
         if (empty($perizinan_id) && $tanggal_mulai < date('Y-m-d')) {
             echo json_encode([
-                'status' => false,
+                'status'  => 'error',
                 'message' => 'Tanggal mulai harus merupakan tanggal di masa depan.'
             ]);
             return;
         }
 
-        // Pengecekan tanggal musali harus < dari tanggal sekarang
+        // Pengecekan tanggal mulai harus <= tanggal selesai
         if ($tanggal_mulai > $tanggal_selesai) {
             echo json_encode([
-                'status' => false,
+                'status'  => 'error',
                 'message' => 'Tanggal mulai tidak boleh lebih besar dari tanggal selesai.'
             ]);
             return;
         }
 
-        // Pengecekan Tanggal yang bentrol
+        // Pengecekan tanggal yang bentrok
         $this->db->where('employee_id', $employee_id);
         $this->db->where('tanggal_mulai <=', $tanggal_selesai);
         $this->db->where('tanggal_selesai >=', $tanggal_mulai);
@@ -194,20 +223,19 @@ class Perizinan extends MY_Controller {
         }
 
         $cek = $this->db->get('perizinan')->row();
-        
-        // Pengecekan Tanggal
-        // Bentrok? -> jika status Pending / Approve, Pengajuan Ditolak, pilih tanggal lain,
-        // Bentrok? -> Jika status Reject -> pengajuan boleh di ajukan
+
+        // Bentrok? -> jika status Pending / Approved, pengajuan ditolak, pilih tanggal lain
+        // Bentrok? -> jika status Rejected -> pengajuan boleh diajukan
         if ($cek) {
-            $pending_status_id = $this->Perizinan_model->get_status_id_by_name('Pending');
+            $pending_status_id  = $this->Perizinan_model->get_status_id_by_name('Pending');
             $approved_status_id = $this->Perizinan_model->get_status_id_by_name('Approved');
 
             if ($cek->status == $pending_status_id || $cek->status == $approved_status_id) {
-                $tanggal_mulai_bentrok = date('d-m-Y', strtotime($cek->tanggal_mulai));
+                $tanggal_mulai_bentrok   = date('d-m-Y', strtotime($cek->tanggal_mulai));
                 $tanggal_selesai_bentrok = date('d-m-Y', strtotime($cek->tanggal_selesai));
 
                 echo json_encode([
-                    'status' => false,
+                    'status'  => 'error',
                     'message' => 'Tanggal ' . $tanggal_mulai_bentrok . ' s/d ' . $tanggal_selesai_bentrok . ' sudah diajukan. Silakan pilih tanggal lain.'
                 ]);
                 return;
@@ -228,36 +256,35 @@ class Perizinan extends MY_Controller {
             $code_perizinan = $this->Perizinan_model->generate_perizinan_no();
 
             $data = [
-                'perizinan_no' => $code_perizinan,
-                'jenis_perizinan_id' => $this->input->post('jenis_perizinan_id', TRUE),
-                'employee_id' => $employee_id,
-                'tanggal_pengajuan' => date('Y-m-d'),
-                'tanggal_mulai' => $tanggal_mulai,
-                'tanggal_selesai' => $tanggal_selesai,
-                'jam_mulai' => $this->input->post('jam_mulai', TRUE),
-                'jam_selesai' => $this->input->post('jam_selesai', TRUE),
-                'alasan' => $this->input->post('alasan', TRUE),
-                'attachment' => $attachment_filename,
-                'status' => $pending_status_id,
-                'created_by' => $user_id,
+                'perizinan_no'       => $code_perizinan,
+                'jenis_perizinan_id' => $jenis_perizinan_id,
+                'employee_id'         => $employee_id,
+                'tanggal_pengajuan'   => date('Y-m-d'),
+                'tanggal_mulai'       => $tanggal_mulai,
+                'tanggal_selesai'     => $tanggal_selesai,
+                'jam_mulai'           => $jam_mulai,
+                'jam_selesai'          => $jam_selesai,
+                'alasan'               => $this->input->post('alasan', TRUE),
+                'attachment'           => $attachment_filename,
+                'status'                => $pending_status_id,
+                'created_by'           => $user_id,
             ];
 
         // Edit
         } else {
 
             $data = [
-                'jenis_perizinan_id' => $this->input->post('jenis_perizinan_id', TRUE),
-                'employee_id' => $employee_id,
-                'tanggal_pengajuan' => date('Y-m-d'),
-                'tanggal_mulai' => $tanggal_mulai,
-                'tanggal_selesai' => $tanggal_selesai,
-                'jam_mulai' => $this->input->post('jam_mulai', TRUE),
-                'jam_selesai' => $this->input->post('jam_selesai', TRUE),
-                'alasan' => $this->input->post('alasan', TRUE),
-                'attachment' => $attachment_filename,
-                'status' => $existing->status,
-                'updated_by' => $user_id,
-                'updated_at' => date('Y-m-d H:i:s'),
+                'jenis_perizinan_id' => $jenis_perizinan_id,
+                'employee_id'         => $employee_id,
+                'tanggal_mulai'       => $tanggal_mulai,
+                'tanggal_selesai'     => $tanggal_selesai,
+                'jam_mulai'           => $jam_mulai,
+                'jam_selesai'          => $jam_selesai,
+                'alasan'               => $this->input->post('alasan', TRUE),
+                'attachment'           => $attachment_filename,
+                'status'                => $existing->status,
+                'updated_by'           => $user_id,
+                'updated_at'           => date('Y-m-d H:i:s'),
             ];
         }
 
@@ -266,7 +293,7 @@ class Perizinan extends MY_Controller {
 
         if (!$saved_id) {
             echo json_encode([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Data perizinan gagal disimpan.'
             ]);
             return;
