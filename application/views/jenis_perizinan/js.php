@@ -52,12 +52,14 @@ function openForm(id) {
         .done(function (html) {
             $('#modal-perizinan-tipe-body').html(html);
             $('#jenis_perizinan_status').bootstrapToggle();
+
             $('#jenis_perizinan_status').on('change', function () {
                 var value = $(this).prop('checked')
                     ? $(this).data('active-value')
                     : $(this).data('inactive-value');
                 $('#jenis_perizinan_status_value').val(value);
             });
+
             $('#jenis_perizinan_name').on('input', function () {
                 var code = $(this).val().trim().toUpperCase().replace(/\s+/g, '_');
                 $('#jenis_perizinan_code').val(code);
@@ -65,6 +67,7 @@ function openForm(id) {
                 $('#jenis_perizinan_name_error').addClass('d-none');
                 $(this).removeClass('is-invalid');
             });
+            
             $('#form-jenis-perizinan').on('submit', function (event) {
                 var form = this;
                 var nameInput = $('#jenis_perizinan_name');
