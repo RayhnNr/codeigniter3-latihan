@@ -130,6 +130,9 @@ window.addEventListener('load', function () {
 					}
 
 					updateDuration();
+					if (!isFormInitialized) {
+						isFormInitialized = true;
+					}
 				}
 			});
 		}
@@ -197,10 +200,11 @@ window.addEventListener('load', function () {
 		$('#tanggal_selesai').attr('min', stringHariIni);
 
 		var isAutoCorrectingDates = false;
+		var isFormInitialized = false;
 
 		function validateTanggalMulai() {
 
-			if (isAutoCorrectingDates) {
+			if (!isFormInitialized || isAutoCorrectingDates) {
 				return;
 			}
 
@@ -257,7 +261,7 @@ window.addEventListener('load', function () {
 
 		function validateTanggalSelesai() {
 
-			if (isAutoCorrectingDates) {
+			if (!isFormInitialized || isAutoCorrectingDates) {
 				return;
 			}
 
@@ -314,7 +318,6 @@ window.addEventListener('load', function () {
 
 		$('#tanggal_mulai').on('input', validateTanggalMulai);
 		$('#tanggal_selesai').on('input', validateTanggalSelesai);
-
 		$('#form-perizinan').on('submit', function (event) {
 			event.preventDefault();
 			$('#form-perizinan small.text-danger').text('');

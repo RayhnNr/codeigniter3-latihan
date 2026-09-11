@@ -53,7 +53,7 @@
                     <div class="row d-none" id="field_waktu">
                         <div class="col-md-6" id="field_jam_mulai">
                             <div class="form-group">
-                                <label for="jam_mulai">Jam Mulai</label>
+                                <label for="jam_mulai">Jam Mulai <span class="text-danger">*</span></label>
                                 <div class="input-group date" id="jam_mulai_picker" data-target-input="nearest">
                                     <input type="text" name="jam_mulai" id="jam_mulai" class="form-control datetimepicker-input" value="<?= html_escape(set_value('jam_mulai')) ?>" data-target="#jam_mulai_picker" placeholder="HH:mm" autocomplete="off">
                                     <div class="input-group-append" data-target="#jam_mulai_picker" data-toggle="datetimepicker"><div class="input-group-text"><i class="far fa-clock"></i></div></div>
@@ -63,7 +63,7 @@
                         </div>
                         <div class="col-md-6" id="field_jam_selesai">
                             <div class="form-group">
-                                <label for="jam_selesai">Jam Selesai</label>
+                                <label for="jam_selesai">Jam Selesai <span class="text-danger">*</span></label>
                                 <div class="input-group date" id="jam_selesai_picker" data-target-input="nearest">
                                     <input type="text" name="jam_selesai" id="jam_selesai" class="form-control datetimepicker-input" value="<?= html_escape(set_value('jam_selesai')) ?>" data-target="#jam_selesai_picker" placeholder="HH:mm" autocomplete="off">
                                     <div class="input-group-append" data-target="#jam_selesai_picker" data-toggle="datetimepicker"><div class="input-group-text"><i class="far fa-clock"></i></div></div>
