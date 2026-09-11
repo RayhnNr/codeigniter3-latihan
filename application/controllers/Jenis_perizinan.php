@@ -29,6 +29,14 @@ class Jenis_perizinan extends MY_Controller {
         $this->load->view('jenis_perizinan/ajax_form', $data);
     }
 
+    public function getJenisPerizinan()
+    {
+        $jenis_perizinan_id = $this->input->post('jenis_perizinan_id');
+        $data = $this->Jenis_perizinan_model->get($jenis_perizinan_id, TRUE);
+
+        echo json_encode($data);
+    }
+
 
     public function save(){
         $jenis_perizinan_id = $this->input->post('jenis_perizinan_id');

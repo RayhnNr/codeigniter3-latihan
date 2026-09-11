@@ -349,6 +349,21 @@ class Perizinan extends MY_Controller {
         return;
     }
 
+    public function get_fields(){
+        $jenis_perizinan_id = (int) $this->input->post('jenis_perizinan_id');
+        $data = array();
+
+        if (in_array($jenis_perizinan_id, array(2, 3))) {
+            $data = array('field_tanggal_selesai', 'duration_field');
+        } elseif (in_array($jenis_perizinan_id, array(4, 5))) {
+            $data = array('field_tanggal_selesai');
+        } elseif (in_array($jenis_perizinan_id, array(6, 7, 8))) {
+            $data = array('field_waktu');
+        }
+
+        echo json_encode($data);
+    }
+
     public function delete($id){
         $this->Perizinan_model->delete($id);
         // hapus attachment

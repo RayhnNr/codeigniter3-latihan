@@ -77,30 +77,61 @@ window.addEventListener('load', function () {
 
 	if ($('#form-perizinan').length) {
 
+		var allToggleableFields = ['field_tanggal_selesai', 'duration_field', 'field_waktu', 'field_jam_mulai', 'field_jam_selesai'];
+		var visibleFields = [];
 
 		function updatePerizinanFields() {
 			var jenisId = $('#jenis_perizinan_id').val();
-			var isSingleDay = ['6', '7', '8'].indexOf(jenisId) !== -1;
-			var isTimeBased = ['6', '7', '8'].indexOf(jenisId) !== -1;
 
-			$('#perizinan-fields > .col-lg-6').first().children().slice(1).toggleClass('d-none', !jenisId);
-			$('#perizinan-fields > .col-lg-6').last().toggleClass('d-none', !jenisId);
-			$('#perizinan-fields')
-				.toggleClass('perizinan-fields-pending', !jenisId)
-				.toggleClass('perizinan-single-day', isSingleDay)
-				.toggleClass('perizinan-no-time', !isTimeBased);
-			$('#btn-simpan').toggleClass('d-none', !jenisId);
-			$('#field_tanggal_selesai').toggleClass('d-none', isSingleDay);
-			$('#field_waktu').toggleClass('d-none', !isTimeBased);
-			$('#duration_field').toggleClass('d-none', isSingleDay);
-
-			if (isSingleDay) {
-				$('#tanggal_selesai').val('');
+			if (!jenisId) {
+				visibleFields = [];
+				$.each(allToggleableFields, function (_, id) {
+					$('#' + id).addClass('d-none');
+				});
+				$('#perizinan-fields > .col-lg-6').first().children().slice(1).addClass('d-none');
+				$('#perizinan-fields > .col-lg-6').last().addClass('d-none');
+				$('#btn-simpan').addClass('d-none');
+				$('#duration_info').val('');
+				return;
 			}
 
-			if (!isTimeBased) {
-				$('#jam_mulai, #jam_selesai').val('');
-			}
+			$.ajax({
+				url: '<?= base_url('perizinan/get_fields') ?>',
+				type: 'POST',
+				data: { jenis_perizinan_id: jenisId },
+				dataType: 'json',
+				success: function (fields) {
+					visibleFields = fields;
+
+					$('#perizinan-fields > .col-lg-6').first().children().slice(1).removeClass('d-none');
+					$('#perizinan-fields > .col-lg-6').last().removeClass('d-none');
+					$('#btn-simpan').removeClass('d-none');
+
+					$.each(allToggleableFields, function (_, id) {
+						$('#' + id).addClass('d-none');
+					});
+
+					$.each(fields, function (_, id) {
+						$('#' + id).removeClass('d-none');
+					});
+
+					if (visibleFields.indexOf('field_waktu') !== -1) {
+						$('#field_jam_mulai, #field_jam_selesai').removeClass('d-none');
+					}
+
+					if (visibleFields.indexOf('field_tanggal_selesai') === -1) {
+						$('#tanggal_selesai').val('');
+					}
+
+					if (visibleFields.indexOf('field_waktu') === -1 &&
+						visibleFields.indexOf('field_jam_mulai') === -1 &&
+						visibleFields.indexOf('field_jam_selesai') === -1) {
+						$('#jam_mulai, #jam_selesai').val('');
+					}
+
+					updateDuration();
+				}
+			});
 		}
 
 		function parseDate(value) {
@@ -129,9 +160,8 @@ window.addEventListener('load', function () {
 			var endDate = parseDate($('#tanggal_selesai').val());
 			var durationInfo = $('#duration_info');
 			var durationField = $('#duration_field');
-			var isSingleDay = ['6', '7', '8'].indexOf($('#jenis_perizinan_id').val()) !== -1;
 
-			if (!$('#jenis_perizinan_id').val() || isSingleDay) {
+			if (visibleFields.indexOf('duration_field') === -1) {
 				durationField.addClass('d-none');
 				durationInfo.val('');
 				return;
@@ -292,16 +322,16 @@ window.addEventListener('load', function () {
 
 			var form = this;
 			var isValid = true;
-			var jenisId = $('#jenis_perizinan_id').val();
-			var isSingleDay = ['6', '7', '8'].indexOf(jenisId) !== -1;
-			var isTimeBased = ['6', '7', '8'].indexOf(jenisId) !== -1;
+			var hasTanggalSelesai = visibleFields.indexOf('field_tanggal_selesai') !== -1;
+			var hasJamMulai = visibleFields.indexOf('field_waktu') !== -1 || visibleFields.indexOf('field_jam_mulai') !== -1;
+			var hasJamSelesai = visibleFields.indexOf('field_waktu') !== -1 || visibleFields.indexOf('field_jam_selesai') !== -1;
 			var fields = [
 				{ selector: '#jenis_perizinan_id', message: 'Jenis perizinan wajib dipilih.' },
 				{ selector: '#tanggal_mulai', message: 'Tanggal mulai wajib diisi.' },
 				{ selector: '#alasan', message: 'Deskripsi atau alasan wajib diisi.' }
 			];
 
-			if (!isSingleDay) {
+			if (hasTanggalSelesai) {
 				fields.splice(2, 0, { selector: '#tanggal_selesai', message: 'Tanggal selesai wajib diisi.' });
 			}
 
@@ -314,7 +344,7 @@ window.addEventListener('load', function () {
 				}
 			});
 
-			if (isTimeBased) {
+			if (hasJamMulai || hasJamSelesai) {
 
 				var jamMulai = $('#jam_mulai');
 				var jamSelesai = $('#jam_selesai');
@@ -328,44 +358,41 @@ window.addEventListener('load', function () {
 				jamMulai.removeClass('is-invalid');
 				jamSelesai.removeClass('is-invalid');
 
-				if (!nilaiJamMulai) {
+				if (hasJamMulai && !nilaiJamMulai) {
 					$('#error_jam_mulai').text('Jam mulai wajib diisi.');
 					jamMulai.addClass('is-invalid');
 					isValid = false;
 				}
 
-				if (!nilaiJamSelesai) {
+				if (hasJamSelesai && !nilaiJamSelesai) {
 					$('#error_jam_selesai').text('Jam selesai wajib diisi.');
 					jamSelesai.addClass('is-invalid');
 					isValid = false;
 				}
 
-				if (nilaiJamMulai && nilaiJamSelesai) {
+				if ((hasJamMulai && nilaiJamMulai) && (nilaiJamMulai < '08:00' || nilaiJamMulai > '16:00')) {
+					$('#error_jam_mulai').text('Jam mulai harus berada dalam jam kantor (08:00 - 16:00).');
+					jamMulai.addClass('is-invalid');
+					isValid = false;
+				}
 
-					if (nilaiJamMulai < '08:00' || nilaiJamMulai > '16:00') {
-						$('#error_jam_mulai').text('Jam mulai harus berada dalam jam kantor (08:00 - 16:00).');
-						jamMulai.addClass('is-invalid');
-						isValid = false;
-					}
+				if ((hasJamSelesai && nilaiJamSelesai) && (nilaiJamSelesai < '08:00' || nilaiJamSelesai > '16:00')) {
+					$('#error_jam_selesai').text('Jam selesai harus berada dalam jam kantor (08:00 - 16:00).');
+					jamSelesai.addClass('is-invalid');
+					isValid = false;
+				}
 
-					if (nilaiJamSelesai < '08:00' || nilaiJamSelesai > '16:00') {
-						$('#error_jam_selesai').text('Jam selesai harus berada dalam jam kantor (08:00 - 16:00).');
-						jamSelesai.addClass('is-invalid');
-						isValid = false;
-					}
-
-					if (nilaiJamMulai >= nilaiJamSelesai) {
-						$('#error_jam_selesai').text('Jam selesai harus lebih besar dari jam mulai.');
-						jamSelesai.addClass('is-invalid');
-						isValid = false;
-					}
+				if (hasJamMulai && hasJamSelesai && nilaiJamMulai && nilaiJamSelesai && nilaiJamMulai >= nilaiJamSelesai) {
+					$('#error_jam_selesai').text('Jam selesai harus lebih besar dari jam mulai.');
+					jamSelesai.addClass('is-invalid');
+					isValid = false;
 				}
 			}
 
 			var tglMulai = $('#tanggal_mulai').val();
 			var tglSelesai = $('#tanggal_selesai').val();
 
-			if (!isSingleDay && tglMulai && tglSelesai && tglMulai > tglSelesai) {
+			if (hasTanggalSelesai && tglMulai && tglSelesai && tglMulai > tglSelesai) {
 				$('#error_tanggal_selesai').text('Tanggal mulai tidak boleh lebih besar dari tanggal selesai.');
 				$('#tanggal_selesai').addClass('is-invalid');
 				isValid = false;
@@ -375,12 +402,16 @@ window.addEventListener('load', function () {
 				return;
 			}
 
-			if (isSingleDay) {
+			if (!hasTanggalSelesai) {
 				$('#tanggal_selesai').val('');
 			}
 
-			if (!isTimeBased) {
-				$('#jam_mulai, #jam_selesai').val('');
+			if (!hasJamMulai) {
+				$('#jam_mulai').val('');
+			}
+
+			if (!hasJamSelesai) {
+				$('#jam_selesai').val('');
 			}
 
 			Swal.fire({
@@ -446,11 +477,10 @@ window.addEventListener('load', function () {
 			$('#error_jenis_perizinan_id').text('');
 			$(this).removeClass('is-invalid');
 			updatePerizinanFields();
-			updateDuration();
 		});
 
 		$('#tanggal_mulai').on('change input', function () {
-			if (['6', '7', '8'].indexOf($('#jenis_perizinan_id').val()) !== -1) {
+			if (visibleFields.indexOf('field_tanggal_selesai') === -1) {
 				$('#tanggal_selesai').val($(this).val());
 			}
 		});
