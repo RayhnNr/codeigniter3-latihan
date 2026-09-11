@@ -56,7 +56,16 @@
                             </div>
                         </div>
                     </div>
-                    <input type="text" id="duration_info" class="form-control d-none mb-3" disabled readonly aria-label="Durasi">
+                    <div id="duration_field" class="input-group mb-3 d-none">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Duration</span>
+                        </div>
+                        <input type="text" id="duration_info" class="form-control" disabled readonly aria-label="Durasi">
+                        <div class="input-group-append">
+                            <span class="input-group-text">Hari</span>
+                        </div>
+                    </div>
+                    
                     <div class="row" id="field_waktu">
                         <div class="col-md-6" id="field_jam_mulai">
                             <div class="form-group">

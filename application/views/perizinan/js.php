@@ -92,6 +92,7 @@ window.addEventListener('load', function () {
 			$('#btn-simpan').toggleClass('d-none', !jenisId);
 			$('#field_tanggal_selesai').toggleClass('d-none', isSingleDay);
 			$('#field_waktu').toggleClass('d-none', !isTimeBased);
+			$('#duration_field').toggleClass('d-none', isSingleDay);
 
 			if (isSingleDay) {
 				$('#tanggal_selesai').val('');
@@ -127,19 +128,18 @@ window.addEventListener('load', function () {
 			var startDate = parseDate($('#tanggal_mulai').val());
 			var endDate = parseDate($('#tanggal_selesai').val());
 			var durationInfo = $('#duration_info');
+			var durationField = $('#duration_field');
 			var isSingleDay = ['6', '7', '8'].indexOf($('#jenis_perizinan_id').val()) !== -1;
 
-			if (!$('#jenis_perizinan_id').val()) {
-				durationInfo.addClass('d-none').val('');
+			if (!$('#jenis_perizinan_id').val() || isSingleDay) {
+				durationField.addClass('d-none');
+				durationInfo.val('');
 				return;
 			}
 
-			if (isSingleDay && startDate) {
-				endDate = startDate;
-			}
-
 			if (!startDate || !endDate) {
-				durationInfo.removeClass('d-none text-danger').val('');
+				durationField.removeClass('d-none');
+				durationInfo.val('');
 				return;
 			}
 
@@ -149,7 +149,6 @@ window.addEventListener('load', function () {
 			while (currentDate <= endDate) {
 				var day = currentDate.getDay();
 
-				// Minggu = 0, tidak dihitung
 				if (day !== 0) {
 					duration++;
 				}
@@ -157,9 +156,8 @@ window.addEventListener('load', function () {
 				currentDate.setDate(currentDate.getDate() + 1);
 			}
 
-			$('#duration_info')
-				.removeClass('d-none text-danger')
-				.val('Durasi: ' + duration + ' hari.');
+			durationField.removeClass('d-none');
+			durationInfo.val(duration);
 		}
 
 		var today = new Date();
