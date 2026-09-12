@@ -59,10 +59,10 @@
                         <select name="parent_id" id="menu_parent_id" class="form-control select2" style="width: 100%;">
                             <option value="0">-- Menu Utama --</option>
                             <?php foreach ($parent_menus as $parent): ?>
-                                <option value="<?= (int) $parent->id ?>"><?= htmlspecialchars($parent->name) ?></option>
+                                <option value="<?= (int) $parent->id ?>"><?= str_repeat('-- ', (int) ($parent->depth ?? 0)) . htmlspecialchars($parent->name) ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <small class="form-text text-muted">Menu utama tidak memiliki parent. Menu anak memakai ID parent ini.</small>
+                        <small class="form-text text-muted">Hanya menu dengan URL <code>javascript:;</code> yang dapat dipilih sebagai parent atau sub-parent.</small>
                             <small class="text-danger d-none" data-error-for="parent_id"></small>
                     </div>
 
@@ -127,6 +127,7 @@ window.addEventListener('load', function () {
 
     var table = $('#table-menu').DataTable({
         processing: true,
+        paging: false,
         serverSide: false,
         responsive: true,
         scrollX: true,
@@ -173,67 +174,64 @@ window.addEventListener('load', function () {
     function refreshSidebar() {
         $.getJSON('<?= base_url('menu/get_sidebar_data') ?>').done(function (menus) {
             var $sidebar = $('#sidebar-menu-list');
-            var roots = [];
             var childrenByParent = {};
             var currentSection = window.location.pathname.toLowerCase().split('/').filter(Boolean).pop() || '';
 
             $.each(menus, function (_, menu) {
-                if (menu.parent_id === 0) {
-                    roots.push(menu);
-                } else {
-                    childrenByParent[menu.parent_id] = childrenByParent[menu.parent_id] || [];
-                    childrenByParent[menu.parent_id].push(menu);
-                }
+                childrenByParent[menu.parent_id] = childrenByParent[menu.parent_id] || [];
+                childrenByParent[menu.parent_id].push(menu);
             });
 
             $sidebar.find('.dynamic-sidebar-menu').remove();
-            $.each(roots, function (_, menu) {
-                var children = childrenByParent[menu.id] || [];
-                var $item = $('<li>', { 
-                    class: 'nav-item dynamic-sidebar-menu' 
-                });
-                var $link = $('<a>', { 
-                    class: 'nav-link' 
-                });
-                var $icon = $('<i>', { 
-                    class: 'nav-icon ' + (menu.icon || '')
-                 });
-
-                if (children.length) {
-                    var activeParent = false;
-                    var $childList = $('<ul>', { class: 'nav nav-treeview' });
-                    $.each(children, function (_, child) {
-                        var childSection = (child.url || '').split('/')[0].toLowerCase();
-                        var $childLink = $('<a>', {
-                            href: '<?= base_url() ?>' + child.url,
-                            class: 'nav-link' + (currentSection === childSection ? ' active' : '')
-                        });
-                        $childLink.append($('<i>', { 
-                            class: 'nav-icon ' + (child.icon || '') 
+            function renderNodes(parentId, level, $container) {
+                $.each(childrenByParent[parentId] || [], function (_, menu) {
+                    var children = childrenByParent[menu.id] || [];
+                    if (level === 0 && children.length) {
+                        $container.append($('<li>', {
+                            class: 'nav-header dynamic-sidebar-menu',
+                            text: menu.name
                         }));
-                        $childLink.append($('<p>').text(child.name));
-                        $childList.append($('<li>', { 
-                            class: 'nav-item' 
-                        }).append($childLink));
-                        activeParent = activeParent || currentSection === childSection;
-                    });
-                    $link.attr('href', 'javascript:;').addClass(activeParent ? 'active' : '');
-                    $link.append($icon).append($('<p>').text(menu.name).append($('<i>', { class: 'right fas fa-angle-left' })));
-                    $item.addClass('has-treeview' + (activeParent ? ' menu-open' : '')).append($link, $childList);
-                } else {
-                    if (menu.url === 'javascript:;') {
-                        $item.removeClass('nav-item').addClass('nav-header').text(menu.name);
-                        $sidebar.append($item);
+                        renderNodes(menu.id, level + 1, $container);
                         return;
                     }
-                    var menuSection = (menu.url || '').split('/')[0].toLowerCase();
-                    $link.attr('href', '<?= base_url() ?>' + menu.url);
-                    if (currentSection === menuSection) $link.addClass('active');
-                    $link.append($icon).append($('<p>').text(menu.name));
-                    $item.append($link);
-                }
-                $sidebar.append($item);
-            });
+                    var $item = $('<li>', {
+                        class: 'nav-item dynamic-sidebar-menu'
+                    });
+                    var $link = $('<a>', {
+                        class: 'nav-link'
+                    });
+                    var $icon = $('<i>', {
+                        class: 'nav-icon ' + (menu.icon || '')
+                    });
+
+                    if (children.length) {
+                        var activeParent = false;
+                        var $childList = $('<ul>', { class: 'nav nav-treeview' });
+                        $.each(children, function (_, child) {
+                            var childSection = (child.url || '').split('/')[0].toLowerCase();
+                            activeParent = activeParent || currentSection === childSection;
+                        });
+                        $link.attr('href', 'javascript:;').addClass(activeParent ? 'active' : '');
+                        $link.append($icon).append($('<p>').text(menu.name).append($('<i>', { class: 'right fas fa-angle-left' })));
+                        $item.addClass('has-treeview' + (activeParent ? ' menu-open' : '')).append($link);
+                        renderNodes(menu.id, level + 1, $childList);
+                        $item.append($childList);
+                    } else {
+                        if (menu.url === 'javascript:;') {
+                            $item.removeClass('nav-item').addClass('nav-header').text(menu.name);
+                            $container.append($item);
+                            return;
+                        }
+                        var menuSection = (menu.url || '').split('/')[0].toLowerCase();
+                        $link.attr('href', '<?= base_url() ?>' + menu.url);
+                        if (currentSection === menuSection) $link.addClass('active');
+                        $link.append($icon).append($('<p>').text(menu.name));
+                        $item.append($link);
+                    }
+                    $container.append($item);
+                });
+            }
+            renderNodes(0, 0, $sidebar);
         });
     }
 

@@ -121,60 +121,52 @@ class Role extends CI_Controller {
 
     private function prepare_permission_menus($menus, array $permissions, $is_unrestricted_role) {
         $menu_children = [];
-        $menu_roots = [];
         $menu_ids = [];
 
         foreach ($menus as $menu) {
             $menu_id = (int) $menu->id;
             $menu_ids[$menu_id] = true;
-
-            if ((int) $menu->parent_id === 0) {
-                $menu_roots[] = $menu;
-            } else {
-                $menu_children[(int) $menu->parent_id][] = $menu;
-            }
+            $menu_children[(int) $menu->parent_id][] = $menu;
         }
 
+        $menu_roots = [];
         foreach ($menus as $menu) {
             $parent_id = (int) $menu->parent_id;
-            if ($parent_id !== 0 && !isset($menu_ids[$parent_id])) {
+            if ($parent_id === 0 || !isset($menu_ids[$parent_id])) {
                 $menu_roots[] = $menu;
-                unset($menu_children[$parent_id]);
             }
         }
 
-        $permission_menus = [];
-        foreach ($menu_roots as $menu) {
+        $prepare_node = function ($menu, $depth = 0) use (&$prepare_node, $menu_children, $permissions, $is_unrestricted_role) {
             $menu_id = (int) $menu->id;
             $children = $menu_children[$menu_id] ?? [];
             $menu_perm = $permissions[$menu_id] ?? null;
-            $child_checked = 0;
             $prepared_children = [];
 
             foreach ($children as $child) {
-                $child_id = (int) $child->id;
-                $child_perm = $permissions[$child_id] ?? null;
-                $child_is_checked = $is_unrestricted_role || ($child_perm && $child_perm->can_view);
-                $child_checked += $child_is_checked ? 1 : 0;
-                $prepared_children[] = [
-                    'menu' => $child,
-                    'permission' => $child_perm,
-                    'checked' => $child_is_checked,
-                ];
+                $prepared_children[] = $prepare_node($child, $depth + 1);
             }
 
             $parent_checked = $is_unrestricted_role
                 ? true
                 : (!empty($children)
-                    ? ($child_checked === count($children))
+                    ? count(array_filter($prepared_children, function ($child_data) {
+                        return $child_data['checked'];
+                    })) === count($prepared_children)
                     : ($menu_perm && $menu_perm->can_view));
 
-            $permission_menus[] = [
+            return [
                 'menu' => $menu,
                 'permission' => $menu_perm,
                 'children' => $prepared_children,
                 'checked' => (bool) $parent_checked,
+                'depth' => $depth,
             ];
+        };
+
+        $permission_menus = [];
+        foreach ($menu_roots as $menu) {
+            $permission_menus[] = $prepare_node($menu);
         }
 
         return $permission_menus;

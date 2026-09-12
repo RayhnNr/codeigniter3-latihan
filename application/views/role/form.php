@@ -62,54 +62,40 @@
                     </thead>
                     <tbody>
                         <?php
-                        foreach ($permission_menus as $permission_menu):
+                        $render_permission_rows = function ($permission_menu) use (&$render_permission_rows, $readonly, $is_unrestricted_role) {
                             $menu = $permission_menu['menu'];
                             $children = $permission_menu['children'];
-                            $parent_checked = $permission_menu['checked'];
-                            $parent_checkbox_id = 'perm-view-' . (int) $menu->id;
+                            $checkbox_id = 'perm-view-' . (int) $menu->id;
+                            $row_class = empty($children) ? 'permission-child-row' : 'permission-parent-row';
+                            $indent = 1 + (int) ($permission_menu['depth'] ?? 0);
                         ?>
-                        <tr class="permission-parent-row">
-                            <td class="font-weight-bold">
+                        <tr class="<?= $row_class ?>">
+                            <td style="padding-left: <?= 1 + ($indent * 1.5) ?>rem" class="<?= empty($children) ? '' : 'font-weight-bold' ?>">
+                                <?php if ($indent > 1): ?><i class="fas fa-level-up-alt fa-rotate-90 text-muted mr-2"></i><?php endif; ?>
                                 <?php if (!empty($menu->icon)): ?><i class="<?= htmlspecialchars($menu->icon) ?> mr-2"></i> <?php endif; ?>
                                 <?= htmlspecialchars($menu->name) ?>
                             </td>
                             <td class="text-center">
                                 <div class="icheck-primary d-inline">
                                     <input type="checkbox"
-                                        id="<?= $parent_checkbox_id ?>"
-                                        class="icheck-permission perm-view permission-parent"
-                                        data-parent-id="<?= (int) $menu->id ?>"
-                                        name="permissions[<?= (int) $menu->id ?>][view]"
-                                        value="1" <?= $parent_checked ? 'checked' : '' ?> <?= ($readonly || $is_unrestricted_role) ? 'disabled' : '' ?>>
-                                    <label for="<?= $parent_checkbox_id ?>"></label>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php foreach ($children as $child_data):
-                            $child = $child_data['menu'];
-                            $checked = $child_data['checked'] ? 'checked' : '';
-                            $checkbox_id = 'perm-view-' . (int) $child->id;
-                        ?>
-                        <tr class="permission-child-row">
-                            <td class="pl-5">
-                                <i class="fas fa-level-up-alt fa-rotate-90 text-muted mr-2"></i>
-                                <?php if (!empty($child->icon)): ?><i class="<?= htmlspecialchars($child->icon) ?> mr-2"></i> <?php endif; ?>
-                                <?= htmlspecialchars($child->name) ?>
-                            </td>
-                            <td class="text-center">
-                                <div class="icheck-primary d-inline">
-                                    <input type="checkbox"
                                         id="<?= $checkbox_id ?>"
-                                        class="icheck-permission perm-view permission-child"
-                                        data-parent-id="<?= (int) $menu->id ?>"
-                                        name="permissions[<?= (int) $child->id ?>][view]"
-                                        value="1" <?= $checked ?> <?= ($readonly || $is_unrestricted_role) ? 'disabled' : '' ?>>
+                                        class="icheck-permission perm-view <?= empty($children) ? 'permission-child' : 'permission-parent' ?>"
+                                        data-menu-id="<?= (int) $menu->id ?>"
+                                        data-parent-id="<?= (int) $menu->parent_id ?>"
+                                        name="permissions[<?= (int) $menu->id ?>][view]"
+                                        value="1" <?= $permission_menu['checked'] ? 'checked' : '' ?> <?= ($readonly || $is_unrestricted_role) ? 'disabled' : '' ?>>
                                     <label for="<?= $checkbox_id ?>"></label>
                                 </div>
                             </td>
                         </tr>
-                        <?php endforeach; // endforeach $children ?>
-                        <?php endforeach; // endforeach $permission_menus ?>
+                        <?php foreach ($children as $child_data) {
+                            $render_permission_rows($child_data);
+                        };
+                        };
+                        foreach ($permission_menus as $permission_menu) {
+                            $render_permission_rows($permission_menu);
+                        }
+                        ?>
                     </tbody>
                 </table>
             </div>
@@ -171,20 +157,26 @@ window.addEventListener('load', function () {
     $('#role_name').on('input keyup change', fillSlug);
     fillSlug();
 
-    function syncParentCheckbox(parentId) {
-        var $children = $('.permission-child[data-parent-id="' + parentId + '"]');
-        var $parent = $('.permission-parent[data-parent-id="' + parentId + '"]');
-        if (!$children.length || !$parent.length) return;
-        $parent.prop('checked', $children.filter(':checked').length === $children.length);
+    function setDescendants(parentId, checked) {
+        $('[data-parent-id="' + parentId + '"]').each(function () {
+            $(this).prop('checked', checked);
+            setDescendants($(this).data('menu-id'), checked);
+        });
     }
 
-    $('.permission-parent').on('change', function () {
-        var checked = this.checked;
-        var parentId = $(this).data('parent-id');
-        $('.permission-child[data-parent-id="' + parentId + '"]').prop('checked', checked);
-    });
+    function syncParentCheckbox(parentId) {
+        if (!parentId) return;
+        var $children = $('[data-parent-id="' + parentId + '"]');
+        var $parent = $('[data-menu-id="' + parentId + '"]');
+        if (!$children.length || !$parent.length) return;
+        $parent.prop('checked', $children.filter(':checked').length === $children.length);
+        syncParentCheckbox($parent.data('parent-id'));
+    }
 
-    $('.permission-child').on('change', function () {
+    $('.icheck-permission').on('change', function () {
+        if ($(this).hasClass('permission-parent')) {
+            setDescendants($(this).data('menu-id'), this.checked);
+        }
         syncParentCheckbox($(this).data('parent-id'));
     });
 

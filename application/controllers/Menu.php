@@ -56,10 +56,11 @@ class Menu extends CI_Controller {
                 <button class="btn btn-warning btn-sm btn-edit" data-id="' . $id_safe . '"><i class="fas fa-edit"></i> Edit</button>
                 <button class="btn btn-danger btn-sm btn-delete" data-id="' . $id_safe . '"><i class="fas fa-trash"></i> Hapus</button>
             ';
+            $depth = (int) ($menu->depth ?? 0);
             $result[] = [
                 'name'     => $menu->parent_id === '0' || (int) $menu->parent_id === 0
                     ? '<strong>' . htmlspecialchars($menu->name) . '</strong>'
-                    : '<span class="ml-4">' . htmlspecialchars($menu->name) . '</span>',
+                    : '<span style="padding-left: ' . ($depth * 24) . 'px">' . htmlspecialchars($menu->name) . '</span>',
                 'url'      => htmlspecialchars($menu->url),
                 'icon'     => $icon_preview,
                 'order_no' => (int) $menu->order_no,
@@ -73,32 +74,36 @@ class Menu extends CI_Controller {
     }
 
     private function order_menus($menus) {
-        $roots = [];
         $children = [];
         foreach ($menus as $menu) {
-            if ((int) $menu->parent_id === 0) {
-                $roots[] = $menu;
-            } else {
-                $children[(int) $menu->parent_id][] = $menu;
-            }
+            $children[(int) $menu->parent_id][] = $menu;
         }
 
-        usort($roots, [$this, 'compare_menu_order']);
         foreach ($children as &$items) {
             usort($items, [$this, 'compare_menu_order']);
         }
         unset($items);
 
         $ordered = [];
-        foreach ($roots as $root) {
-            $ordered[] = $root;
-            foreach ($children[(int) $root->id] ?? [] as $child) {
-                $ordered[] = $child;
+        $visited = [];
+        $append_branch = function ($parent_id, $depth) use (&$append_branch, &$ordered, &$visited, $children) {
+            foreach ($children[(int) $parent_id] ?? [] as $menu) {
+                $menu_id = (int) $menu->id;
+                if (isset($visited[$menu_id])) {
+                    continue;
+                }
+                $visited[$menu_id] = true;
+                $menu->depth = $depth;
+                $ordered[] = $menu;
+                $append_branch($menu_id, $depth + 1);
             }
-        }
+        };
+        $append_branch(0, 0);
 
+        // Tetap tampilkan data orphan atau relasi lama yang membentuk siklus.
         foreach ($menus as $menu) {
-            if (!in_array($menu, $ordered, true)) {
+            if (!isset($visited[(int) $menu->id])) {
+                $menu->depth = 0;
                 $ordered[] = $menu;
             }
         }
@@ -185,12 +190,27 @@ class Menu extends CI_Controller {
             return;
         }
 
-        if ($parent && (int) $parent->parent_id !== 0) {
+        if ($parent && strtolower(trim((string) $parent->url)) !== 'javascript:;') {
             echo json_encode([
                 'status' => 'error_validation',
-                'errors' => ['parent_id' => 'Parent harus berupa menu utama']
+                'errors' => ['parent_id' => 'Hanya menu dengan URL javascript:; yang dapat menjadi sub-parent']
             ]);
             return;
+        }
+
+        if ($parent) {
+            $ancestor_id = (int) $parent->parent_id;
+            while ($ancestor_id !== 0) {
+                if ($id && $ancestor_id === $id) {
+                    echo json_encode([
+                        'status' => 'error_validation',
+                        'errors' => ['parent_id' => 'Menu tidak boleh menjadi anak dari turunannya sendiri']
+                    ]);
+                    return;
+                }
+                $ancestor = $this->Menu_model->get_by_id($ancestor_id);
+                $ancestor_id = $ancestor ? (int) $ancestor->parent_id : 0;
+            }
         }
 
         $url = strtolower(trim($this->input->post('url')));
@@ -263,7 +283,7 @@ class Menu extends CI_Controller {
         foreach ($parents as $parent) {
             $result[] = [
                 'id'   => (int) $parent->id,
-                'name' => $parent->name,
+                'name' => str_repeat('-- ', (int) ($parent->depth ?? 0)) . $parent->name,
             ];
         }
 

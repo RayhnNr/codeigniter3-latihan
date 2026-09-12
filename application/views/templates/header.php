@@ -121,14 +121,44 @@
         <?php $sidebar_menus = $CI->Menu_model->get_for_role($CI->session->userdata('role_id'), $CI->session->userdata('role')); ?>
         <?php
         $sidebar_children = [];
-        $sidebar_roots = [];
         foreach ($sidebar_menus as $sidebar_menu) {
-          if ((int) $sidebar_menu->parent_id === 0) {
-            $sidebar_roots[] = $sidebar_menu;
-          } else {
-            $sidebar_children[(int) $sidebar_menu->parent_id][] = $sidebar_menu;
-          }
+          $sidebar_children[(int) $sidebar_menu->parent_id][] = $sidebar_menu;
         }
+        $render_sidebar_nodes = function ($parent_id, $level = 0) use (&$render_sidebar_nodes, $sidebar_children, $current_section) {
+          foreach ($sidebar_children[(int) $parent_id] ?? [] as $menu) {
+            $children = $sidebar_children[(int) $menu->id] ?? [];
+            $menu_active = $current_section === strtolower(explode('/', $menu->url)[0]);
+            $child_active = false;
+            foreach ($children as $child) {
+              if ($current_section === strtolower(explode('/', $child->url)[0])) {
+                $child_active = true;
+                break;
+              }
+            }
+
+            if ($level === 0 && !empty($children)) {
+              echo '<li class="nav-header dynamic-sidebar-menu mt-3">' . htmlspecialchars($menu->name) . '</li>';
+              $render_sidebar_nodes($menu->id, $level + 1);
+            } elseif (empty($children)) {
+              if ($menu->url === 'javascript:;') {
+                echo '<li class="nav-header dynamic-sidebar-menu">' . htmlspecialchars($menu->name) . '</li>';
+              } else {
+                echo '<li class="nav-item dynamic-sidebar-menu">';
+                echo '<a href="' . base_url($menu->url) . '" class="nav-link ' . ($menu_active ? 'active' : '') . '">';
+                if (!empty($menu->icon)) echo '<i class="nav-icon ' . htmlspecialchars($menu->icon) . '"></i>';
+                echo '<p>' . htmlspecialchars($menu->name) . '</p></a></li>';
+              }
+            } else {
+              echo '<li class="nav-item dynamic-sidebar-menu has-treeview ' . ($menu_active || $child_active ? 'menu-open' : '') . '">';
+              echo '<a href="javascript:;" class="nav-link ' . ($menu_active || $child_active ? 'active' : '') . '">';
+              if (!empty($menu->icon)) echo '<i class="nav-icon ' . htmlspecialchars($menu->icon) . '"></i>';
+              echo '<p>' . htmlspecialchars($menu->name) . '<i class="right fas fa-angle-left"></i></p></a>';
+              echo '<ul class="nav nav-treeview">';
+              $render_sidebar_nodes($menu->id, $level + 1);
+              echo '</ul></li>';
+            }
+          }
+        };
         ?>
         <ul id="sidebar-menu-list" class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <li class="nav-item">
@@ -137,46 +167,7 @@
               <p>Dashboard</p>
             </a>
           <!-- <li class="nav-header">MASTER DATA</li> -->
-          <?php foreach ($sidebar_roots as $menu): ?>
-            <?php $children = $sidebar_children[(int) $menu->id] ?? []; ?>
-            <?php if (empty($children)): ?>
-              <?php if ($menu->url === 'javascript:;'): ?>
-                <li class="nav-header dynamic-sidebar-menu">
-                  <?= htmlspecialchars($menu->name) ?>
-                </li>
-              <?php else: ?>
-                <li class="nav-item dynamic-sidebar-menu">
-                  <a href="<?= base_url($menu->url) ?>" class="nav-link <?= $current_section === strtolower(explode('/', $menu->url)[0]) ? 'active' : '' ?>">
-                    <?php if (!empty($menu->icon)): ?><i class="nav-icon <?= htmlspecialchars($menu->icon) ?>"></i><?php endif; ?>
-                    <p><?= htmlspecialchars($menu->name) ?></p>
-                  </a>
-                </li>
-              <?php endif; ?>
-            <?php else: ?>
-              <?php $parent_active = false; 
-                foreach ($children as $child) { 
-                  if ($current_section === strtolower(explode('/', $child->url)[0])) { 
-                    $parent_active = true; break; 
-                  } 
-                } ?>
-              <li class="nav-item dynamic-sidebar-menu has-treeview <?= $parent_active ? 'menu-open' : '' ?>">
-                <a href="javascript:;" class="nav-link <?= $parent_active ? 'active' : '' ?>">
-                  <?php if (!empty($menu->icon)): ?><i class="nav-icon <?= htmlspecialchars($menu->icon) ?>"></i><?php endif; ?>
-                  <p><?= htmlspecialchars($menu->name) ?><i class="right fas fa-angle-left"></i></p>
-                </a>
-                <ul class="nav nav-treeview">
-                  <?php foreach ($children as $child): ?>
-                    <li class="nav-item">
-                      <a href="<?= base_url($child->url) ?>" class="nav-link <?= $current_section === strtolower(explode('/', $child->url)[0]) ? 'active' : '' ?>">
-                        <?php if (!empty($child->icon)): ?><i class="nav-icon <?= htmlspecialchars($child->icon) ?>"></i><?php endif; ?>
-                        <p><?= htmlspecialchars($child->name) ?></p>
-                      </a>
-                    </li>
-                  <?php endforeach; ?>
-                </ul>
-              </li>
-            <?php endif; ?>
-          <?php endforeach; ?>
+          <?php $render_sidebar_nodes(0); ?>
 
         </ul>
       </nav>
