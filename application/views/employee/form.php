@@ -248,7 +248,14 @@ window.addEventListener('load', function () {
         for (var i = 0; i < 10; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
         $('#inp-password').val(pw).attr('type', 'text');
         $('#ico-pw').removeClass('fa-eye').addClass('fa-eye-slash');
-        Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Password: ' + pw, showConfirmButton: false, timer: 4000 });
+        Swal.fire({ 
+            toast: true, 
+            position: 'top-end', 
+            icon: 'info', 
+            title: 'Password: ' + pw, 
+            showConfirmButton: false, 
+            timer: 4000 
+        });
     });
 
     // ---- Submit ----
@@ -296,7 +303,14 @@ window.addEventListener('load', function () {
                     });
                     // Kembalikan format salary
                     $('#salary').val(formatMoney(parseMoney($('#salary').val())));
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Periksa kembali form!', showConfirmButton: false, timer: 2500 });
+                    Swal.fire({ 
+                        toast: true, 
+                        position: 'top-end', 
+                        icon: 'warning', 
+                        title: 'Periksa kembali form!', 
+                        showConfirmButton: false, 
+                        timer: 2500 
+                    });
                 } else {
                     Swal.fire('Gagal', response.message || 'Terjadi kesalahan', 'error');
                 }

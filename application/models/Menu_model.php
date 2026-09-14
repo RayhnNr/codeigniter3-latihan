@@ -166,4 +166,11 @@ class Menu_model extends CI_Model{
         $this->db->order_by('product_status_id', 'ASC');
         return $this->db->get('product_status')->result();
     }
+
+    public function get_status_id_by_name($name){
+        $this->db->where('module', 'product');
+        $this->db->where('LOWER(product_status_name)', strtolower($name));
+        $row = $this->db->get('product_status')->row();
+        return $row ? $row->product_status_id : null;
+    }
 }

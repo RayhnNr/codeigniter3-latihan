@@ -95,7 +95,11 @@ window.addEventListener('load', function () {
             dataSrc: 'data'
         },
         columns: [
-            { data: 'no', orderable: false, searchable: false },
+            { 
+                data: 'no', 
+                orderable: false, 
+                searchable: false 
+            },
             { data: 'department_name' },
             {
                 data: 'product_status_name',

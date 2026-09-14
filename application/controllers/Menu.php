@@ -20,6 +20,8 @@ class Menu extends CI_Controller {
         $data['menu'] = $this->Menu_model->get_data();
         $data['parent_menus'] = $this->Menu_model->get_parent_menus();
         $data['status_list'] = $this->Menu_model->get_status();
+        $data['active_status_id'] = $this->Menu_model->get_status_id_by_name('Aktif');
+        $data['inactive_status_id'] = $this->Menu_model->get_status_id_by_name('Nonaktif');
         $this->load->view('templates/header', $data);
         $this->load->view('menu/index', $data);
         $this->load->view('templates/footer');

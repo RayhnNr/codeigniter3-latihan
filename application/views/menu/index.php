@@ -28,9 +28,9 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form id="formMenu" novalidate>
-                <div class="modal-header">
+                <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="modalMenuTitle">Tambah Menu</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="menu_id" value="0">
@@ -44,7 +44,7 @@
                     <div class="form-group">
                         <label>URL / Controller</label>
                         <input type="text" name="url" id="menu_url" class="form-control" placeholder="contoh: employee, role/detail, javascript:;" required maxlength="150" pattern="(javascript:;|[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*)">
-                        <small class="form-text text-muted">Gunakan <code>javascript:;</code> untuk menu parent atau path controller seperti <code>role/detail</code>.</small>
+                        <small class="form-text text-muted">Gunakan <code>javascript:;</code> untuk menu Parent atau Sub Parent</small>
                         <small class="text-danger d-none" data-error-for="url"></small>
                     </div>
 
@@ -55,15 +55,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Parent Menu</label>
+                        <label>Parent/Sub Parent Menu</label>
                         <select name="parent_id" id="menu_parent_id" class="form-control select2" style="width: 100%;">
                             <option value="0">-- Menu Utama --</option>
                             <?php foreach ($parent_menus as $parent): ?>
                                 <option value="<?= (int) $parent->id ?>"><?= str_repeat('-- ', (int) ($parent->depth ?? 0)) . htmlspecialchars($parent->name) ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <small class="form-text text-muted">Hanya menu dengan URL <code>javascript:;</code> yang dapat dipilih sebagai parent atau sub-parent.</small>
-                            <small class="text-danger d-none" data-error-for="parent_id"></small>
+                        <small class="text-danger d-none" data-error-for="parent_id"></small>
                     </div>
 
                     <!-- <div class="form-group">
@@ -76,18 +75,6 @@
                     <div class="form-group">
                         <label>Status</label>
                         <br>
-                        <?php
-                            $active_status_id = '';
-                            $inactive_status_id = '';
-                            foreach ($status_list as $status) {
-                                $status_name = strtolower(trim($status->product_status_name));
-                                if ($status_name === 'aktif') {
-                                        $active_status_id = (int) $status->product_status_id;
-                                } elseif ($status_name === 'nonaktif') {
-                                        $inactive_status_id = (int) $status->product_status_id;
-                                }
-                            }
-                        ?>
                         <input type="hidden" name="status" value="<?= $inactive_status_id ?>">
                         <input type="checkbox" id="menu_status" name="status" value="<?= $active_status_id ?>"
                                         data-toggle="toggle" data-on="Aktif" data-off="Nonaktif"
@@ -242,7 +229,7 @@ window.addEventListener('load', function () {
         form.classList.remove('was-validated');
         $('#menu_id').val(0);
         $('#menu_parent_id').val(0).trigger('change');
-            $('#menu_order_no').val('Otomatis');
+        $('#menu_order_no').val('Otomatis');
         $('#menu_status').bootstrapToggle('on');
 
         if (!id || id == 0) {

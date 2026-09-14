@@ -261,7 +261,12 @@ window.addEventListener('load', function () {
                 if (res.status === 'success') {
                     $row.find('.detail-id').val(res.id);
                     hideSaveButton($row);
-                    Swal.fire({ icon: 'success', title: 'Tersimpan', timer: 1000, showConfirmButton: false });
+                    Swal.fire({ 
+                        icon: 'success', 
+                        title: 'Tersimpan', 
+                        timer: 1000, 
+                        showConfirmButton: false 
+                    });
                 } else {
                     Swal.fire('Gagal', res.message || 'Gagal menyimpan baris.', 'error');
                 }
