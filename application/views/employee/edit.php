@@ -3,83 +3,164 @@
         <h5><i class="fas fa-user-edit mr-2"></i>Edit Employee</h5>
     </div>
     <div class="card-body">
-        <?= form_open('employee/update/' . $employee->employee_id, ['id' => 'form-employee-edit']) ?>
+        <?= form_open_multipart('employee/update/' . $employee->employee_id, ['id' => 'form-employee-edit']) ?>
 
         <!-- ===== DATA EMPLOYEE ===== -->
         <h6 class="font-weight-bold text-primary mb-3"><i class="fas fa-id-badge mr-1"></i> Data Employee</h6>
-
         <div class="form-group">
             <label>Employee Code</label>
             <input type="text" class="form-control" value="<?= $employee->employee_code ?>" disabled>
             <small class="text-muted">Employee Code otomatis</small>
         </div>
 
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>Nama Employee <span class="text-danger">*</span></label>
-                <input type="text" name="employee_name" id="employee_name"
-                       class="form-control"
-                       value="<?= set_value('employee_name', $employee->employee_name) ?>">
-                <small class="text-danger" id="error_employee_name"></small>
-            </div>
-            <div class="form-group col-md-6">
-                <label>Salary <span class="text-danger">*</span></label>
-                <div class="input-group">
-                    <div class="input-group-prepend"><span class="input-group-text">Rp</span></div>
-                    <input type="text" id="salary" name="salary" class="form-control"
-                           inputmode="numeric" autocomplete="off"
-                           value="<?= isset($employee) ? number_format($employee->salary, 0, ',', '.') : '' ?>">
+        <div class="row">
+            <!-- Kolom Kiri: Input Data Employee -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Nama Employee <span class="text-danger">*</span></label>
+                    <input type="text" name="employee_name" id="employee_name"
+                           class="form-control"
+                           value="<?= set_value('employee_name', $employee->employee_name) ?>">
+                    <small class="text-danger" id="error_employee_name"></small>
                 </div>
-                <small class="text-danger" id="error_salary"></small>
-            </div>
-        </div>
 
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>Departemen <span class="text-danger">*</span></label>
-                <select name="departemen_id" id="departemen_id" class="form-control form-select2">
-                    <option value="">-- Pilih Departemen --</option>
-                    <?php foreach ($departments as $d): ?>
-                        <option value="<?= $d->department_id ?>"
-                            <?= set_select('departemen_id', $d->department_id, ($employee->department_id == $d->department_id)) ?>>
-                            <?= $d->department_name ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <small class="text-danger" id="error_departemen_id"></small>
-            </div>
-            <div class="form-group col-md-6">
-                <label>Posisi <span class="text-danger">*</span></label>
-                <select name="position_id" id="position_id" class="form-control form-select2">
-                    <option value="">-- Pilih Posisi --</option>
-                    <?php foreach ($positions as $p): ?>
-                        <option value="<?= $p->position_id ?>"
-                            <?= set_select('position_id', $p->position_id, ($employee->position_id == $p->position_id)) ?>>
-                            <?= $p->position_name ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <small class="text-danger" id="error_position_id"></small>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>Sub Department</label>
-                <select name="sub_department_id" id="sub_department_id" class="form-control select2">
-                    <option value="">-- Pilih Department dulu --</option>
-                </select>
-                <small class="text-danger" id="error_sub_department_id"></small>
-            </div>
-            <div class="form-group col-md-6">
-                <label>Status Employee</label>
-                <div class="">
-                    <input type="checkbox" id="employee_status" data-on="Aktif" data-off="Nonaktif"
-                           data-onstyle="success" data-offstyle="secondary" data-width="120"
-                           <?= ($employee->status == 1) ? 'checked' : '' ?>>
-                    <input type="hidden" name="status" id="employee_status_hidden" value="<?= (int) $employee->status ?>">
+                <div class="form-group">
+                    <label>Salary <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <div class="input-group-prepend"><span class="input-group-text">Rp</span></div>
+                        <input type="text" id="salary" name="salary" class="form-control"
+                               inputmode="numeric" autocomplete="off"
+                               value="<?= isset($employee) ? number_format($employee->salary, 0, ',', '.') : '' ?>">
+                    </div>
+                    <small class="text-danger" id="error_salary"></small>
                 </div>
-                <small class="text-danger" id="error_status"></small>
+
+                <div class="form-group">
+                    <label>Departemen <span class="text-danger">*</span></label>
+                    <select name="departemen_id" id="departemen_id" class="form-control form-select2">
+                        <option value="">-- Pilih Departemen --</option>
+                        <?php foreach ($departments as $d): ?>
+                            <option value="<?= $d->department_id ?>"
+                                <?= set_select('departemen_id', $d->department_id, ($employee->department_id == $d->department_id)) ?>>
+                                <?= $d->department_name ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small class="text-danger" id="error_departemen_id"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Posisi <span class="text-danger">*</span></label>
+                    <select name="position_id" id="position_id" class="form-control form-select2">
+                        <option value="">-- Pilih Posisi --</option>
+                        <?php foreach ($positions as $p): ?>
+                            <option value="<?= $p->position_id ?>"
+                                <?= set_select('position_id', $p->position_id, ($employee->position_id == $p->position_id)) ?>>
+                                <?= $p->position_name ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small class="text-danger" id="error_position_id"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Sub Department</label>
+                    <select name="sub_department_id" id="sub_department_id" class="form-control select2">
+                        <option value="">-- Pilih Department dulu --</option>
+                    </select>
+                    <small class="text-danger" id="error_sub_department_id"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Status Employee</label>
+                    <div>
+                        <input type="checkbox" id="employee_status" data-on="Aktif" data-off="Nonaktif"
+                               data-onstyle="success" data-offstyle="secondary" data-width="120"
+                               <?= ($employee->status == 1) ? 'checked' : '' ?>>
+                        <input type="hidden" name="status" id="employee_status_hidden" value="<?= (int) $employee->status ?>">
+                    </div>
+                    <small class="text-danger" id="error_status"></small>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Foto Employee & BPJS -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="photo">Foto Employee</label>
+                    <div class="custom-file">
+                        <input type="file"
+                            name="photo"
+                            id="photo"
+                            class="custom-file-input"
+                            accept=".jpg,.jpeg,.png,.webp">
+                        <label class="custom-file-label" for="photo">Pilih foto baru...</label>
+                    </div>
+                    <small class="form-text text-muted">
+                        JPG, JPEG, PNG, atau WEBP. Maksimal 2 MB. Kosongkan jika tidak diubah.
+                    </small>
+                    <small class="text-danger d-block" id="error_photo"></small>
+                    <div id="photo_preview" class="mt-2">
+                        <?php if (!empty($employee->photo) && file_exists('./uploads/employees/photo/' . $employee->photo)): ?>
+                            <div id="old_photo_box">
+                                <small class="text-muted d-block mb-1">Foto saat ini:</small>
+                                <img src="<?= base_url('uploads/employees/photo/' . $employee->photo) ?>" alt="Foto Employee" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">
+                                <small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik foto untuk memperbesar</small>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="form-group">
+                    <label>BPJS</label>
+                    <div>
+                        <input type="checkbox" id="has_bpjs_toggle" data-on="Ada" data-off="Tidak"
+                               data-onstyle="success" data-offstyle="secondary" data-width="120"
+                               <?= (!empty($employee->has_bpjs) && $employee->has_bpjs == 1) ? 'checked' : '' ?>>
+                        <input type="hidden" name="has_bpjs" id="has_bpjs_hidden" value="<?= (!empty($employee->has_bpjs) && $employee->has_bpjs == 1) ? 1 : 0 ?>">
+                    </div>
+                    <small class="text-muted">
+                        Aktifkan jika employee memiliki BPJS.
+                    </small>
+                </div>
+
+                <div class="form-group <?= (!empty($employee->has_bpjs) && $employee->has_bpjs == 1) ? '' : 'd-none' ?>" id="bpjs_field">
+                    <label for="bpjs_card">Kartu BPJS</label>
+                    <div class="custom-file">
+                        <input type="file"
+                            name="bpjs_card"
+                            id="bpjs_card"
+                            class="custom-file-input"
+                            accept=".jpg,.jpeg,.png,.webp,.pdf">
+                        <label class="custom-file-label" for="bpjs_card">Pilih file kartu BPJS baru...</label>
+                    </div>
+                    <small class="form-text text-muted">
+                        JPG, JPEG, PNG, WEBP, atau PDF. Maksimal 2 MB. Kosongkan jika tidak diubah.
+                    </small>
+                    <small class="text-danger d-block" id="error_bpjs_card"></small>
+                    <div id="bpjs_preview" class="mt-2">
+                        <?php if (!empty($employee->has_bpjs) && !empty($employee->bpjs_card) && file_exists('./uploads/employees/bpjs/' . $employee->bpjs_card)): ?>
+                            <?php 
+                                $ext = strtolower(pathinfo($employee->bpjs_card, PATHINFO_EXTENSION));
+                                $file_url = base_url('uploads/employees/bpjs/' . $employee->bpjs_card);
+                            ?>
+                            <div id="old_bpjs_box">
+                                <small class="text-muted d-block mb-1">Kartu BPJS saat ini:</small>
+                                <?php if ($ext === 'pdf'): ?>
+                                    <div class="p-2 border rounded bg-light">
+                                        <i class="fas fa-file-pdf text-danger mr-2 fa-lg"></i>
+                                        <a href="<?= $file_url ?>" target="_blank" rel="noopener noreferrer"><strong><?= htmlspecialchars($employee->bpjs_card) ?></strong></a>
+                                        <small class="text-muted d-block mt-1"><i class="fas fa-external-link-alt mr-1"></i>Klik untuk membuka file PDF</small>
+                                    </div>
+                                <?php else: ?>
+                                    <img src="<?= $file_url ?>" alt="Kartu BPJS" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">
+                                    <small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik kartu untuk memperbesar</small>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -187,6 +268,26 @@
                 <span class="spinner-border spinner-border-sm d-none" id="btn-spinner" role="status"></span>
                 Update
             </button>
+        </div>
+
+        <!-- Modal Popup Preview Gambar -->
+        <div class="modal fade" id="modalImagePreview" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-primary text-white py-2">
+                        <h5 class="modal-title" id="modalImageTitle"><i class="fas fa-image mr-2"></i>Preview Gambar</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center p-3 bg-light">
+                        <img src="" id="modalPreviewImg" class="img-fluid rounded shadow-sm" style="max-height: 75vh; object-fit: contain;">
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <?= form_close() ?>
@@ -321,13 +422,138 @@ window.addEventListener('load', function () {
         Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Password baru: ' + pw, showConfirmButton: false, timer: 4000 });
     });
 
+    // ---- Preview Foto Employee (FileReader) + Custom File Label ----
+    $('#photo').on('change', function () {
+        var file = this.files[0];
+        $('#error_photo').text('');
+
+        var fileName = file ? file.name : 'Pilih foto baru...';
+        $(this).next('.custom-file-label').text(fileName);
+
+        if (!file) {
+            $('#photo_preview .new-preview').remove();
+            $('#old_photo_box').show();
+            return;
+        }
+
+        var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            $('#error_photo').text('Format file tidak didukung. Gunakan JPG, JPEG, PNG, atau WEBP.');
+            $(this).val('');
+            $(this).next('.custom-file-label').text('Pilih foto baru...');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            $('#error_photo').text('Ukuran file foto maksimal 2 MB.');
+            $(this).val('');
+            $(this).next('.custom-file-label').text('Pilih foto baru...');
+            return;
+        }
+
+        $('#old_photo_box').hide();
+        $('#photo_preview .new-preview').remove();
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#photo_preview').append(
+                '<div class="new-preview mt-2">' +
+                    '<small class="text-success d-block mb-1 font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Foto baru yang dipilih:</small>' +
+                    '<img src="' + e.target.result + '" alt="Foto Employee Baru" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">' +
+                    '<small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik foto untuk memperbesar</small>' +
+                '</div>'
+            );
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // ---- BPJS Toggle (bootstrapToggle) & Preview ----
+    $('#has_bpjs_toggle').bootstrapToggle();
+    $('#has_bpjs_toggle').on('change', function () {
+        var isChecked = $(this).prop('checked');
+        $('#has_bpjs_hidden').val(isChecked ? 1 : 0);
+        if (isChecked) {
+            $('#bpjs_field').removeClass('d-none');
+        } else {
+            $('#bpjs_field').addClass('d-none');
+            $('#bpjs_card').val('');
+            $('#bpjs_card').next('.custom-file-label').text('Pilih file kartu BPJS baru...');
+            $('#bpjs_preview .new-preview').remove();
+            $('#error_bpjs_card').text('');
+        }
+    });
+
+    $('#bpjs_card').on('change', function () {
+        var file = this.files[0];
+        $('#error_bpjs_card').text('');
+
+        var fileName = file ? file.name : 'Pilih file kartu BPJS baru...';
+        $(this).next('.custom-file-label').text(fileName);
+
+        if (!file) {
+            $('#bpjs_preview .new-preview').remove();
+            $('#old_bpjs_box').show();
+            return;
+        }
+
+        var isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+        var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+        if (!allowedTypes.includes(file.type) && !isPdf) {
+            $('#error_bpjs_card').text('Format file tidak didukung. Gunakan JPG, JPEG, PNG, WEBP, atau PDF.');
+            $(this).val('');
+            $(this).next('.custom-file-label').text('Pilih file kartu BPJS baru...');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            $('#error_bpjs_card').text('Ukuran file kartu BPJS maksimal 2 MB.');
+            $(this).val('');
+            $(this).next('.custom-file-label').text('Pilih file kartu BPJS baru...');
+            return;
+        }
+
+        $('#old_bpjs_box').hide();
+        $('#bpjs_preview .new-preview').remove();
+
+        if (isPdf) {
+            $('#bpjs_preview').append(
+                '<div class="new-preview mt-2">' +
+                    '<small class="text-success d-block mb-1 font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Kartu BPJS baru (PDF):</small>' +
+                    '<div class="p-2 border rounded bg-light">' +
+                        '<i class="fas fa-file-pdf text-danger mr-2 fa-lg"></i>' +
+                        '<strong>' + file.name + '</strong> <small class="text-muted">(' + (file.size / 1024).toFixed(1) + ' KB)</small>' +
+                    '</div>' +
+                '</div>'
+            );
+        } else {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#bpjs_preview').append(
+                    '<div class="new-preview mt-2">' +
+                        '<small class="text-success d-block mb-1 font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Kartu BPJS baru yang dipilih:</small>' +
+                        '<img src="' + e.target.result + '" alt="Kartu BPJS Baru" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">' +
+                        '<small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik kartu untuk memperbesar</small>' +
+                    '</div>'
+                );
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // ---- Popup Modal Preview Gambar Saat Diklik ----
+    $(document).on('click', '.img-preview-clickable', function () {
+        var src = $(this).attr('src');
+        var title = $(this).attr('alt') || 'Preview Gambar';
+        $('#modalPreviewImg').attr('src', src);
+        $('#modalImageTitle').html('<i class="fas fa-image mr-2"></i>' + title);
+        $('#modalImagePreview').modal('show');
+    });
+
     // ---- Submit ----
     $('#form-employee-edit').on('submit', function (e) {
         e.preventDefault();
         $('.text-danger').text('');
-
-        var salaryValue = parseMoney($('#salary').val());
-        $('#salary').val(salaryValue);
 
         Swal.fire({
             title: 'Update Employee?',
@@ -338,11 +564,9 @@ window.addEventListener('load', function () {
             cancelButtonText: 'Batal',
             reverseButtons: true
         }).then(function (result) {
-            if (!result.isConfirmed) {
-                $('#salary').val(formatMoney(salaryValue));
-                return;
+            if (result.isConfirmed) {
+                updateData();
             }
-            updateData();
         });
     });
 
@@ -351,10 +575,18 @@ window.addEventListener('load', function () {
         $btn.prop('disabled', true);
         $('#btn-spinner').removeClass('d-none');
 
+        var form = document.getElementById('form-employee-edit');
+        var formData = new FormData(form);
+
+        var rawSalary = parseMoney($('#salary').val());
+        formData.set('salary', rawSalary);
+
         $.ajax({
             url: '<?= base_url('employee/update/' . $employee->employee_id) ?>',
             type: 'POST',
-            data: $('#form-employee-edit').serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             dataType: 'json',
             success: function (response) {
                 if (response.status === 'success') {
@@ -363,7 +595,6 @@ window.addEventListener('load', function () {
                     $.each(response.errors, function (field, message) {
                         $('#error_' + field).text(message);
                     });
-                    $('#salary').val(formatMoney(parseMoney($('#salary').val())));
                     Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Periksa kembali form!', showConfirmButton: false, timer: 2500 });
                 } else {
                     Swal.fire('Gagal', response.message || 'Terjadi kesalahan', 'error');
@@ -375,8 +606,6 @@ window.addEventListener('load', function () {
             complete: function () {
                 $btn.prop('disabled', false);
                 $('#btn-spinner').addClass('d-none');
-                var raw = parseMoney($('#salary').val());
-                if (raw > 0) $('#salary').val(formatMoney(raw));
             }
         });
     }

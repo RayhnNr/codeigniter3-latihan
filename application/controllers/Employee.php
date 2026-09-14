@@ -63,17 +63,19 @@ class Employee extends MY_Controller {
 
     // Store — simpan employee + user dalam 1 transaction
     public function store() {
-        // ---- Validasi Employee ----
-        $this->form_validation->set_rules('employee_name', 'Nama Employee', 'required|trim');
-        $this->form_validation->set_rules('departemen_id',  'Departemen',    'required');
-        $this->form_validation->set_rules('position_id',    'Posisi',        'required');
-        $this->form_validation->set_rules('salary',         'Salary',        'required');
+        $has_bpjs = ((int) $this->input->post('has_bpjs') === 1) ? 1 : 0;
 
-        // ---- Validasi User ----
+        // Validasi Employee
+        $this->form_validation->set_rules('employee_name', 'Nama Employee', 'required|trim');
+        $this->form_validation->set_rules('departemen_id', 'Departemen', 'required');
+        $this->form_validation->set_rules('position_id', 'Posisi', 'required');
+        $this->form_validation->set_rules('salary', 'Salary', 'required');
+
+        // Validasi User
         $this->form_validation->set_rules('username', 'Username', 'required|min_length[4]|max_length[50]');
-        $this->form_validation->set_rules('email',    'Email',    'required|valid_email');
+        $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
         $this->form_validation->set_rules('nomor_hp', 'Nomor HP', 'trim|max_length[20]');
-        $this->form_validation->set_rules('role_id',  'Role',     'required');
+        $this->form_validation->set_rules('role_id', 'Role', 'required');
         $this->form_validation->set_rules('password', 'Password', 'required|min_length[6]');
 
         if ($this->form_validation->run() == FALSE) {
@@ -85,52 +87,172 @@ class Employee extends MY_Controller {
         }
 
         $username = trim($this->input->post('username'));
-        $email    = trim($this->input->post('email'));
+        $email = trim($this->input->post('email'));
         $nomor_hp = trim((string) $this->input->post('nomor_hp'));
 
         // Cek duplikasi user
         if ($this->User_model->username_exists($username)) {
-            echo json_encode(['status' => 'failed', 'errors' => ['username' => 'Username sudah digunakan.']]);
+            echo json_encode([
+                'status' => 'failed',
+                'errors' => [
+                    'username' => 'Username sudah digunakan.'
+                ]
+            ]);
             return;
         }
+
         if ($this->User_model->email_exists($email)) {
-            echo json_encode(['status' => 'failed', 'errors' => ['email' => 'Email sudah digunakan.']]);
+            echo json_encode([
+                'status' => 'failed',
+                'errors' => [
+                    'email' => 'Email sudah digunakan.'
+                ]
+            ]);
             return;
         }
+
         if ($this->User_model->nomor_hp_exists($nomor_hp)) {
-            echo json_encode(['status' => 'failed', 'errors' => ['nomor_hp' => 'Nomor HP sudah digunakan.']]);
+            echo json_encode([
+                'status' => 'failed',
+                'errors' => [
+                    'nomor_hp' => 'Nomor HP sudah digunakan.'
+                ]
+            ]);
             return;
         }
 
         $employee_code = $this->Employee_model->generate_employee_code();
 
+        $photo_path = './uploads/employees/photo/';
+        $bpjs_path  = './uploads/employees/bpjs/';
+        if (!is_dir($photo_path)) {
+            mkdir($photo_path, 0777, true);
+        }
+        if (!is_dir($bpjs_path)) {
+            mkdir($bpjs_path, 0777, true);
+        }
+
+        $photo     = null;
+        $bpjs_card = null;
+
+        // Upload Foto Employee
+        if (!empty($_FILES['photo']['name'])) {
+            $config_photo['upload_path']      = $photo_path;
+            $config_photo['allowed_types']    = 'jpg|jpeg|png|webp';
+            $config_photo['max_size']         = 2048;
+            $config_photo['encrypt_name']     = TRUE;
+            $config_photo['file_ext_tolower'] = TRUE;
+
+            $this->load->library('upload');
+            $this->upload->initialize($config_photo, TRUE);
+
+            if (!$this->upload->do_upload('photo')) {
+                echo json_encode([
+                    'status' => 'failed',
+                    'errors' => [
+                        'photo' => $this->upload->display_errors('', '')
+                    ]
+                ]);
+                return;
+            }
+
+            $photo = $this->upload->data('file_name');
+        }
+
+        // Upload Kartu BPJS
+        if ($has_bpjs == 1) {
+            if (empty($_FILES['bpjs_card']['name'])) {
+                echo json_encode([
+                    'status' => 'failed',
+                    'errors' => [
+                        'bpjs_card' => 'Kartu BPJS wajib diupload jika BPJS diaktifkan.'
+                    ]
+                ]);
+                return;
+            }
+
+            $config_bpjs['upload_path']      = $bpjs_path;
+            $config_bpjs['allowed_types']    = 'jpg|jpeg|png|webp|pdf';
+            $config_bpjs['max_size']         = 2048;
+            $config_bpjs['encrypt_name']     = TRUE;
+            $config_bpjs['file_ext_tolower'] = TRUE;
+
+            $this->load->library('upload');
+            $this->upload->initialize($config_bpjs, TRUE);
+
+            if (!$this->upload->do_upload('bpjs_card')) {
+                if ($photo && file_exists($photo_path . $photo)) {
+                    @unlink($photo_path . $photo);
+                }
+                echo json_encode([
+                    'status' => 'failed',
+                    'errors' => [
+                        'bpjs_card' => $this->upload->display_errors('', '')
+                    ]
+                ]);
+                return;
+            }
+
+            $bpjs_card = $this->upload->data('file_name');
+        } else {
+            $bpjs_card = null;
+        }
+
         $emp_data = [
-            'employee_code'    => $employee_code,
-            'employee_name'    => $this->input->post('employee_name'),
-            'department_id'    => $this->input->post('departemen_id'),
-            'sub_department_id'=> !empty($this->input->post('sub_department_id')) ? (int) $this->input->post('sub_department_id') : null,
-            'position_id'      => $this->input->post('position_id'),
-            'salary'           => $this->input->post('salary'),
-            'status'           => 1,
-            'join_date'        => date('Y-m-d'),
+            'employee_code'     => $employee_code,
+            'employee_name'     => $this->input->post('employee_name'),
+            'department_id'     => $this->input->post('departemen_id'),
+            'sub_department_id' => !empty($this->input->post('sub_department_id'))
+                ? (int) $this->input->post('sub_department_id')
+                : null,
+            'position_id'       => $this->input->post('position_id'),
+            'salary'            => $this->input->post('salary'),
+            'photo'             => $photo,
+            'has_bpjs'          => $has_bpjs,
+            'bpjs_card'         => $bpjs_card,
+            'status'            => $this->input->post('status') !== null ? (int) $this->input->post('status') : 1,
+            'join_date'         => date('Y-m-d'),
         ];
 
         $user_data = [
             'username'  => $username,
             'email'     => $email,
             'nomor_hp'  => $nomor_hp,
-            'password'  => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
+            'password'  => password_hash(
+                $this->input->post('password'),
+                PASSWORD_DEFAULT
+            ),
             'role_id'   => (int) $this->input->post('role_id'),
             'status'    => 1,
         ];
 
-        $result = $this->Employee_model->insert_with_user($emp_data, $user_data);
+        $result = $this->Employee_model->insert_with_user(
+            $emp_data,
+            $user_data
+        );
 
         if ($result['success']) {
-            $this->session->set_flashdata('success', 'Employee ' . $employee_code . ' berhasil ditambahkan beserta akun user.');
-            echo json_encode(['status' => 'success', 'message' => 'Employee berhasil ditambahkan.']);
+            $this->session->set_flashdata(
+                'success',
+                'Employee ' . $employee_code . ' berhasil ditambahkan beserta akun user.'
+            );
+
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'Employee berhasil ditambahkan.'
+            ]);
         } else {
-            echo json_encode(['status' => 'failed', 'message' => $result['message']]);
+            if ($photo && file_exists($photo_path . $photo)) {
+                @unlink($photo_path . $photo);
+            }
+            if ($bpjs_card && file_exists($bpjs_path . $bpjs_card)) {
+                @unlink($bpjs_path . $bpjs_card);
+            }
+
+            echo json_encode([
+                'status'  => 'failed',
+                'message' => $result['message']
+            ]);
         }
     }
 
@@ -176,7 +298,7 @@ class Employee extends MY_Controller {
         // Cek apakah employee sudah punya akun
         $existing_account = $this->User_model->get_by_employee_id($id);
 
-        // ---- Validasi Employee ----
+        // Validasi Employee
         $this->form_validation->set_rules('employee_name', 'Nama Employee', 'required|trim');
         $this->form_validation->set_rules('departemen_id',  'Departemen',    'required');
         $this->form_validation->set_rules('sub_department_id', 'Sub Department', 'numeric');
@@ -184,7 +306,7 @@ class Employee extends MY_Controller {
         $this->form_validation->set_rules('salary',         'Salary',        'required');
         $this->form_validation->set_rules('status',         'Status',        'required');
 
-        // ---- Validasi User ----
+        // Validasi User
         $this->form_validation->set_rules('username',    'Username',          'required|min_length[4]|max_length[50]');
         $this->form_validation->set_rules('email',       'Email',             'required|valid_email');
         $this->form_validation->set_rules('nomor_hp',    'Nomor HP',          'trim|max_length[20]');
@@ -231,12 +353,95 @@ class Employee extends MY_Controller {
             return;
         }
 
+        $photo_path = './uploads/employees/photo/';
+        $bpjs_path  = './uploads/employees/bpjs/';
+        if (!is_dir($photo_path)) {
+            mkdir($photo_path, 0777, true);
+        }
+        if (!is_dir($bpjs_path)) {
+            mkdir($bpjs_path, 0777, true);
+        }
+
+        $photo     = $employee->photo;
+        $has_bpjs  = ((int) $this->input->post('has_bpjs') === 1) ? 1 : 0;
+        $bpjs_card = $employee->bpjs_card;
+
+        // Upload Foto Baru (jika ada)
+        if (!empty($_FILES['photo']['name'])) {
+            $config_photo['upload_path']      = $photo_path;
+            $config_photo['allowed_types']    = 'jpg|jpeg|png|webp';
+            $config_photo['max_size']         = 2048;
+            $config_photo['encrypt_name']     = TRUE;
+            $config_photo['file_ext_tolower'] = TRUE;
+
+            $this->load->library('upload');
+            $this->upload->initialize($config_photo, TRUE);
+
+            if (!$this->upload->do_upload('photo')) {
+                echo json_encode([
+                    'status' => 'failed',
+                    'errors' => [
+                        'photo' => $this->upload->display_errors('', '')
+                    ]
+                ]);
+                return;
+            }
+
+            // Hapus foto lama jika ada
+            if (!empty($employee->photo) && file_exists($photo_path . $employee->photo)) {
+                @unlink($photo_path . $employee->photo);
+            }
+
+            $photo = $this->upload->data('file_name');
+        }
+
+        // Handle BPJS
+        if ($has_bpjs == 1) {
+            // Jika upload file kartu BPJS baru
+            if (!empty($_FILES['bpjs_card']['name'])) {
+                $config_bpjs['upload_path']      = $bpjs_path;
+                $config_bpjs['allowed_types']    = 'jpg|jpeg|png|webp|pdf';
+                $config_bpjs['max_size']         = 2048;
+                $config_bpjs['encrypt_name']     = TRUE;
+                $config_bpjs['file_ext_tolower'] = TRUE;
+
+                $this->load->library('upload');
+                $this->upload->initialize($config_bpjs, TRUE);
+
+                if (!$this->upload->do_upload('bpjs_card')) {
+                    echo json_encode([
+                        'status' => 'failed',
+                        'errors' => [
+                            'bpjs_card' => $this->upload->display_errors('', '')
+                        ]
+                    ]);
+                    return;
+                }
+
+                // Hapus kartu BPJS lama jika ada file fisiknya
+                if (!empty($employee->bpjs_card) && file_exists($bpjs_path . $employee->bpjs_card)) {
+                    @unlink($bpjs_path . $employee->bpjs_card);
+                }
+
+                $bpjs_card = $this->upload->data('file_name');
+            }
+        } else {
+            // Jika BPJS dimatikan -> hapus file lama jika ada & simpan NULL
+            if (!empty($employee->bpjs_card) && file_exists($bpjs_path . $employee->bpjs_card)) {
+                @unlink($bpjs_path . $employee->bpjs_card);
+            }
+            $bpjs_card = null;
+        }
+
         $emp_data = [
             'employee_name'     => $this->input->post('employee_name'),
             'department_id'     => $this->input->post('departemen_id'),
             'sub_department_id' => !empty($this->input->post('sub_department_id')) ? (int) $this->input->post('sub_department_id') : null,
             'position_id'       => $this->input->post('position_id'),
             'salary'            => $this->input->post('salary'),
+            'photo'             => $photo,
+            'has_bpjs'          => $has_bpjs,
+            'bpjs_card'         => $bpjs_card,
             'status'            => (int) $this->input->post('status'),
         ];
 

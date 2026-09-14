@@ -1,81 +1,86 @@
-<div class="card">
-    <div class="card-body">
-        <form id="form_product">
+<form id="form_product">
+    <div class="card">
+        <div class="card-body">
+            
             <div class="form-group">
                 <label>Product Code</label>
                 <input type="text" class="form-control" value="<?= $product_code_preview ?>" disabled>
                 <small class="text-muted">Product Code otomatis</small>
             </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Nama Produk</label>
+                        <input type="text" name="product_name" class="form-control">
+                        <small class="text-danger" id="error_product_name"></small>
+                    </div>
 
-            <div class="form-group">
-                <label>Nama Produk</label>
-                <input type="text" name="product_name" class="form-control">
-                <small class="text-danger" id="error_product_name"></small>
-            </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="category_id" class="form-control form-select2">
+                            <option value="">-- Pilih Category --</option>
+                            <?php foreach ($categories as $c): ?>
+                                <option value="<?= $c->category_id ?>"><?= $c->category_name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-danger" id="error_category_id"></small>
+                    </div>
 
-            <div class="form-group">
-                <label>Category</label>
-                <select name="category_id" class="form-control form-select2">
-                    <option value="">-- Pilih Category --</option>
-                    <?php foreach ($categories as $c): ?>
-                        <option value="<?= $c->category_id ?>"><?= $c->category_name ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <small class="text-danger" id="error_category_id"></small>
-            </div>
+                    <div class="form-group">
+                        <label>Brand</label>
+                        <select name="brand_id" class="form-control form-select2">
+                            <option value="">-- Pilih Brand --</option>
+                            <?php foreach ($brands as $b): ?>
+                                <option value="<?= $b->brand_id ?>"><?= $b->brand_name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-danger" id="error_brand_id"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="status_toggle">Status</label><br>
+                        <input type="hidden" name="status" id="status_hidden" value="<?= $active_status_id ?>">
+                        <input type="checkbox" id="status_toggle" data-toggle="toggle" 
+                            data-on="Aktif" data-off="Nonaktif" 
+                            data-onstyle="success" data-offstyle="secondary" checked>
+                        <small class="text-danger" id="error_status"></small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Unit</label>
+                        <select name="unit_id" class="form-control form-select2">
+                            <option value="">-- Pilih Unit --</option>
+                            <?php foreach ($units as $u): ?>
+                                <option value="<?= $u->unit_id ?>"><?= $u->unit_name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-danger" id="error_unit_id"></small>
+                    </div>
 
-            <div class="form-group">
-                <label>Brand</label>
-                <select name="brand_id" class="form-control form-select2">
-                    <option value="">-- Pilih Brand --</option>
-                    <?php foreach ($brands as $b): ?>
-                        <option value="<?= $b->brand_id ?>"><?= $b->brand_name ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <small class="text-danger" id="error_brand_id"></small>
-            </div>
-
-            <div class="form-group">
-                <label>Unit</label>
-                <select name="unit_id" class="form-control form-select2">
-                    <option value="">-- Pilih Unit --</option>
-                    <?php foreach ($units as $u): ?>
-                        <option value="<?= $u->unit_id ?>"><?= $u->unit_name ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <small class="text-danger" id="error_unit_id"></small>
-            </div>
-
-            <div class="form-group">
-                <label>Product Type</label>
-                <select name="product_type" class="form-control form-select2">
-                    <option value="">-- Pilih Product Type --</option>
-                    <?php foreach ($product_type as $pt): ?>
-                        <option value="<?= $pt->product_type_id ?>"><?= $pt->product_type_name ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <small class="text-danger" id="error_product_type"></small>
-            </div>
-
-            <div class="form-group">
-                <label for="status_toggle">Status</label>
-                <input type="hidden" name="status" id="status_hidden" value="<?= $active_status_id ?>">
-                <input type="checkbox" id="status_toggle" data-toggle="toggle" 
-                    data-on="Aktif" data-off="Nonaktif" 
-                    data-onstyle="success" data-offstyle="secondary" <?= $product->status == $active_status_id ? 'checked' : '' ?>>
-                <small class="text-danger" id="error_status"></small>
-            </div>
-
-            <div class="form-group">
-                <label>Deskripsi</label>
-                <textarea name="description" class="form-control" rows="3"></textarea>
-                <small class="text-danger" id="error_description"></small>
-            </div>
+                    <div class="form-group">
+                        <label>Product Type</label>
+                        <select name="product_type" class="form-control form-select2">
+                            <option value="">-- Pilih Product Type --</option>
+                            <?php foreach ($product_type as $pt): ?>
+                                <option value="<?= $pt->product_type_id ?>"><?= $pt->product_type_name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-danger" id="error_product_type"></small>
+                    </div>
+                    <div class="form-group">
+                        <label>Deskripsi</label>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
+                        <small class="text-danger" id="error_description"></small>
+                    </div>
+                </div>
+            </div>   
+        </div>
+        <div class="card-footer">
             <a href="<?= base_url('product') ?>" class="btn btn-secondary">Batal</a>
             <button type="submit" class="btn btn-primary">Simpan</button>
-        </form>
+        </div>
     </div>
-</div>
+</form>
 
 <script>
 window.addEventListener('load', function () {
@@ -98,6 +103,8 @@ window.addEventListener('load', function () {
             $('#status_hidden').val('<?= $inactive_status_id ?>');
         }
     });
+
+    $('#status_toggle').trigger('change');
 
     $('#form_product').on('submit', function(e) {
         e.preventDefault();

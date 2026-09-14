@@ -175,7 +175,12 @@ window.addEventListener('load', function () {
         },
         columns: [
             { data: 'no', orderable: false, searchable: false },
-            { data: 'product_code' },
+            { data: null,
+                render: function (data, type, row){
+                    return `<button type="button" class="btn btn-sm btn-block btn-info" onclick="detailData('${row.product_id}')"><i class="fas fa-eye"></i> ${row.product_code}</button>`;
+                }
+            },
+            // { data: 'product_code' },
             { data: 'product_name' },
             { data: 'category_name' },
             { data: 'brand_name' },
@@ -203,9 +208,6 @@ window.addEventListener('load', function () {
                 render: function (data, type, row) {
                     return `
                         <div class="d-flex flex-wrap mb-n2">
-                            <a href="javascript:void(0)" onclick="detailData(${row.product_id})" class="btn btn-sm btn-info mr-2 mb-2">
-                                <i class="fas fa-eye"></i> Detail
-                            </a>
                             <a href="<?= base_url('product/edit/') ?>${row.product_id}" class="btn btn-sm btn-warning mr-2 mb-2">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
