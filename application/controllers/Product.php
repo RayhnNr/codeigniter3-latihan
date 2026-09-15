@@ -245,7 +245,7 @@ class Product extends MY_Controller{
         }
 
         $data = array(
-            'created_by'   => $this->session->userdata('user_id'),
+            // 'created_by'   => $this->session->userdata('user_id'),
             'product_name' => $this->input->post('product_name'),
             'category_id'  => $this->input->post('category_id'),
             'brand_id'     => $this->input->post('brand_id'),
