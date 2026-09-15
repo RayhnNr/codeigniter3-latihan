@@ -249,4 +249,20 @@ class Approve_model extends CI_Model{
         $query = $this->db->get();
         return $query->row() ? $query->row()->product_status_id : null;
     }
+
+    public function delete_header_and_detail($approval_id){
+        $this->db->trans_start();
+
+        // Delete dari approval_detail
+        $this->db->where('approval_id', $approval_id);
+        $this->db->delete('approval_detail');
+
+        // Delete dari approval
+        $this->db->where('approval_id', $approval_id);
+        $this->db->delete('approval');
+
+        $this->db->trans_complete();
+
+        return $this->db->trans_status();
+    }
 }

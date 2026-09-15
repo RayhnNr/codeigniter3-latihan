@@ -235,7 +235,6 @@ window.addEventListener('load', function () {
                 data: 'created_at',
                 render: function(data) {
                     if (!data) return '-';
-
                     return data.substring(0, 10);
                 }
             },
@@ -245,7 +244,6 @@ window.addEventListener('load', function () {
                 searchable: false,
                 render: function (data, type, row) {
                     return `
-
                         <a href="<?= base_url('approve/edit/') ?>${row.approval_id}" class="btn btn-sm btn-warning">
                             <i class="fas fa-edit"></i> Edit
                         </a>
@@ -262,45 +260,45 @@ window.addEventListener('load', function () {
     //     table.ajax.reload();
     // });
 
-    // $(document).on('click', '.btn-delete', function(){
-    //     var button = $(this);
-    //     var purchaseId = button.data('id');
-    //     var purchaseCode = button.data('code');
+    $(document).on('click', '.btn-delete', function(){
+        var button = $(this);
+        var approvalId = button.data('id');
+        var approvalCode = button.data('code');
 
-    //     Swal.fire({
-    //         title: 'Hapus purchase ini?',
-    //         text: 'Purchase ' + purchaseCode + ' akan dihapus permanen dan tidak bisa dikembalikan.',
-    //         icon: 'warning',
-    //         showCancelButton: true,
-    //         confirmButtonText: 'Ya, hapus',
-    //         cancelButtonText: 'Batal',
-    //         confirmButtonColor: '#dc3545',
-    //         reverseButtons: true
-    //     }).then((result) => {
-    //         if (result.isConfirmed) {
-    //             deletePurchase(purchaseId, purchaseCode);
-    //         }
-    //     });
+        Swal.fire({
+            title: 'Hapus approval ini?',
+            text: 'Approval ' + approvalCode + ' akan dihapus permanen dan tidak bisa dikembalikan.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#dc3545',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteapproval(approvalId, approvalCode);
+            }
+        });
 
-    //     function deletePurchase(purchaseId, purchaseCode) {
-    //         $.ajax({
-    //             url: '<?= base_url('purchase/delete') ?>/' + purchaseId,
-    //             type: 'POST',
-    //             dataType: 'json',
-    //             success: function(response) {
-    //                 if (response.status === 'success') {
-    //                     Swal.fire('Berhasil', response.message, 'success');
-    //                     table.ajax.reload();
-    //                 } else {
-    //                     Swal.fire('Gagal', response.message, 'error');
-    //                 }
-    //             },
-    //             error: function() {
-    //                 Swal.fire('Gagal', 'Terjadi kesalahan saat menghapus purchase.', 'error');
-    //             }
-    //         });
-    //     }
-    // });
+        function deleteapproval(approvalId, approvalCode) {
+            $.ajax({
+                url: '<?= base_url('approve/delete') ?>/' + approvalId,
+                type: 'POST',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire('Berhasil', response.message, 'success');
+                        table.ajax.reload();
+                    } else {
+                        Swal.fire('Gagal', response.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Gagal', 'Terjadi kesalahan saat menghapus approval.', 'error');
+                }
+            });
+        }
+    });
 
     function renderStatusBadge(statusName) {
         const statusMap = {

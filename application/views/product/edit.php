@@ -1,4 +1,4 @@
-<form id="form_edit_product">
+<form id="form_edit_product" enctype="multipart/form-data">
     <div class="card">
         <div class="card-header">
             <h5>Edit Product</h5>
@@ -88,12 +88,105 @@
                 </div>
             </div>
         </div>
-        <div class="card-footer">
+    
+    </div>
+    <div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-images text-primary"></i> Daftar Foto Produk</span>
+            <button type="button" id="btnTambahRow" class="btn btn-primary btn-sm ml-auto">
+                <i class="fas fa-plus"></i> Tambah Foto
+            </button>
+        </div>
+        <div class="card-body" id="wrapperDetail">
+            <!-- diisi otomatis: gambar LAMA (dari database) + gambar BARU (kalau ditambah) -->
+        </div>
+        <div class="card-footer text-right">
             <a href="<?= base_url('product') ?>" class="btn btn-secondary">Batal</a>
             <button type="submit" class="btn btn-primary">Update</button>
         </div>
     </div>
 </form>
+<template id="rowTemplateExisting">
+    <div class="row-detail form-row align-items-center mb-3 pb-3 border-bottom" data-existing="1">
+        <div class="col-md-2 text-center">
+            <img src="" class="img-preview img-thumbnail existing-img preview-image" alt="Preview gambar" style="max-height: 80px; max-width: 100%; object-fit: cover; cursor: pointer;">
+        </div>
+
+        <div class="col-md-5">
+            <small class="text-muted d-block mb-1">Ganti foto</small>
+            <div class="custom-file">
+                <input type="file" name="replace_images[]" class="custom-file-input replace-image-input" accept=".jpg,.jpeg,.png,.gif">
+                <label class="custom-file-label replace-file-label">Pilih file...</label>
+            </div>
+            <input type="hidden" name="existing_image_id[]" class="existing-image-id" value="">
+            <input type="hidden" name="replace_image_ids[]" class="replace-image-id" value="">
+        </div>
+
+        <div class="col-md-3 text-center">
+            <label class="mb-1">Gambar Utama</label>
+            <input type="checkbox" class="primary-toggle" data-existing-primary="1"
+                   data-toggle="toggle" data-on="Ya" data-off="Tidak"
+                   data-onstyle="success" data-offstyle="secondary" data-size="sm">
+        </div>
+
+        <div class="col-md-2 text-right">
+            <button type="button" class="btn btn-success btn-sm btn-save-image d-none" title="Simpan foto">
+                <i class="fas fa-check"></i>
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" title="Hapus foto">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+</template>
+<template id="rowTemplateNew">
+    <div class="row-detail form-row align-items-center mb-3 pb-3 border-bottom" data-existing="0">
+        <div class="col-md-2 text-center">
+            <img src="<?= base_url('assets/img/no-image.png') ?>" class="img-preview img-thumbnail preview-image" alt="Preview gambar" style="max-height: 80px; max-width: 100%; object-fit: cover; cursor: pointer;">
+        </div>
+
+        <div class="col-md-5">
+            <label class="d-md-none">Pilih Gambar</label>
+            <div class="custom-file">
+                <input type="file" name="product_images[]" class="custom-file-input image-input" accept=".jpg,.jpeg,.png">
+                <label class="custom-file-label file-label">Pilih file...</label>
+            </div>
+            <small class="text-danger error-image d-block"></small>
+        </div>
+
+        <div class="col-md-3 text-center primary-control invisible">
+            <label class="mb-1">Gambar Utama</label>
+            <input type="checkbox" class="primary-toggle"
+                   data-toggle="toggle" data-on="Ya" data-off="Tidak"
+                   data-onstyle="success" data-offstyle="secondary" data-size="sm">
+        </div>
+
+        <div class="col-md-2 text-right">
+            <button type="button" class="btn btn-success btn-sm btn-save-image d-none" title="Simpan foto">
+                <i class="fas fa-check"></i>
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" title="Hapus foto">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+</template>
+
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary border-0">
+                <h5 class="modal-title text-white">Preview Gambar</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imagePreview" src="" alt="Preview gambar produk" class="img-fluid" style="max-height: 75vh;">
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 window.addEventListener('load', function () {
@@ -119,10 +212,356 @@ window.addEventListener('load', function () {
 
     $('#status_toggle').trigger('change');
 
+    // data gambar lama dari Controller, dikirim sebagai JSON
+    var existingImages = <?= json_encode($product_images ?? []) ?>;
+
+    function addExistingRow(image) {
+        let template = document.getElementById('rowTemplateExisting').content.cloneNode(true);
+        $('#wrapperDetail').append(template);
+
+        let $lastRow = $('#wrapperDetail .row-detail').last();
+        $lastRow.find('.existing-img').attr('src', '<?= base_url('uploads/products/') ?>' + encodeURIComponent(image.file_name));
+        $lastRow.find('.existing-image-id').val(image.product_image_id);
+        $lastRow.find('.replace-image-id').val(image.product_image_id);
+        $lastRow.find('.primary-toggle').bootstrapToggle();
+
+        if (image.is_primary == 1) {
+            $lastRow.find('.primary-toggle').bootstrapToggle('on');
+        }
+    }
+
+    function addNewRow() {
+        let template = document.getElementById('rowTemplateNew').content.cloneNode(true);
+        $('#wrapperDetail').append(template);
+
+        let $lastRow = $('#wrapperDetail .row-detail').last();
+        $lastRow.find('.primary-toggle').bootstrapToggle();
+    }
+
+    // load semua gambar lama saat halaman pertama dibuka
+    existingImages.forEach(function(img) {
+        addExistingRow(img);
+    });
+
+    // kalau belum ada gambar sama sekali, langsung sediakan 1 baris kosong untuk upload baru
+    if (existingImages.length === 0) {
+        addNewRow();
+        $('#wrapperDetail .row-detail').first().find('.primary-toggle').bootstrapToggle('on');
+    }
+
+    $('#btnTambahRow').on('click', function() {
+        addNewRow();
+    });
+
+    // hapus baris (baik gambar lama maupun baru)
+    $('#wrapperDetail').on('click', '.btn-remove-row', function() {
+        var $row = $(this).closest('.row-detail');
+        var isExisting = $row.data('existing') == 1;
+        var imageId = $row.find('.existing-image-id').val();
+
+        Swal.fire({
+            title: 'Hapus foto ini?',
+            text: isExisting ? 'Foto akan langsung dihapus dari database.' : 'Foto yang belum disimpan akan dibuang.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#dc3545',
+            reverseButtons: true
+        }).then(function(result) {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            if (!isExisting) {
+                removeImageRow($row);
+                return;
+            }
+
+            $.post('<?= base_url('product/delete_image') ?>/' + imageId, {
+                product_id: '<?= $product->product_id ?>'
+            }, function(response) {
+                if (response.status === 'success') {
+                    removeImageRow($row);
+                    Swal.fire({ 
+                        toast: true, 
+                        position: 'top-end', 
+                        icon: 'success', 
+                        title: response.message, 
+                        showConfirmButton: false, 
+                        timer: 1800 
+                    });
+                } else {
+                    Swal.fire('Gagal', response.message || 'Foto gagal dihapus.', 'error');
+                }
+            }, 'json').fail(function() {
+                Swal.fire('Gagal', 'Terjadi kesalahan saat menghapus foto.', 'error');
+            });
+        });
+    });
+
+    function removeImageRow($row) {
+        var wasPrimary = $row.find('.primary-toggle').prop('checked');
+        $row.remove();
+        if ($('#wrapperDetail .row-detail').length === 0) {
+            addNewRow();
+        } else if (wasPrimary) {
+            $('#wrapperDetail .row-detail').first().find('.primary-toggle').bootstrapToggle('on');
+        }
+    }
+
+    // preview gambar BARU saat file dipilih
+    $('#wrapperDetail').on('change', '.image-input', function() {
+        var $row = $(this).closest('.row-detail');
+        var file = this.files[0];
+
+        var fileName = file ? file.name : 'Pilih file...';
+        $row.find('.file-label').text(fileName);
+        $row.find('.btn-save-image').toggleClass('d-none', !file);
+
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $row.find('.img-preview').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+    });
+
+    $('#wrapperDetail').on('change', '.replace-image-input', function() {
+        var $row = $(this).closest('.row-detail');
+        var file = this.files[0];
+
+        $row.find('.replace-file-label').text(file ? file.name : 'Pilih file...');
+        $row.find('.btn-save-image').toggleClass('d-none', !file);
+
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $row.find('.img-preview').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    $('#wrapperDetail').on('click', '.btn-save-image', function() {
+        var $button = $(this);
+        var $row = $button.closest('.row-detail');
+        var isExisting = $row.data('existing') == 1;
+        var input = isExisting ? $row.find('.replace-image-input')[0] : $row.find('.image-input')[0];
+        var imageId = $row.find('.existing-image-id').val();
+
+        if (!input || !input.files.length) {
+            return;
+        }
+
+        if (!isExisting) {
+            var newFormData = new FormData();
+            newFormData.append('image', input.files[0]);
+            newFormData.append('product_id', '<?= $product->product_id ?>');
+            newFormData.append('is_primary', $row.find('.primary-toggle').prop('checked') ? '1' : '0');
+
+            $button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+            $.ajax({
+                url: '<?= base_url('product/add_image') ?>',
+                type: 'POST',
+                data: newFormData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        $row.attr('data-existing', '1');
+                        $row.data('existing', 1);
+                        $row.find('.image-input')
+                            .removeAttr('name')
+                            .removeClass('image-input')
+                            .addClass('replace-image-input');
+                        $row.find('.file-label')
+                            .removeClass('file-label')
+                            .addClass('replace-file-label')
+                            .text('Pilih file...');
+                        $row.find('.primary-control').removeClass('invisible');
+                        $('<input>').attr({ 
+                            type: 'hidden', 
+                            name: 'existing_image_id[]', 
+                            value: response.image_id 
+                        }).addClass('existing-image-id').appendTo($row.find('.col-md-5'));
+                        $('<input>').attr({ 
+                            type: 'hidden', 
+                            name: 'replace_image_ids[]', 
+                            value: response.image_id 
+                        }).addClass('replace-image-id').appendTo($row.find('.col-md-5'));
+                        input.value = '';
+                        $button.addClass('d-none').prop('disabled', false).html('<i class="fas fa-check"></i>');
+                        Swal.fire({ 
+                            toast: true, 
+                            position: 'top-end', 
+                            icon: 'success', 
+                            title: response.message, 
+                            showConfirmButton: false, 
+                            timer: 1800 
+                        });
+                    } else {
+                        $button.prop('disabled', false).html('<i class="fas fa-check"></i>');
+                        Swal.fire('Gagal', response.message || 'Foto gagal disimpan.', 'error');
+                    }
+                },
+                error: function() {
+                    $button.prop('disabled', false).html('<i class="fas fa-check"></i>');
+                    Swal.fire('Gagal', 'Terjadi kesalahan saat menyimpan foto.', 'error');
+                }
+            });
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('image', input.files[0]);
+        formData.append('product_id', '<?= $product->product_id ?>');
+
+        $button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+        $.ajax({
+            url: '<?= base_url('product/replace_image') ?>/' + imageId,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    $row.find('.img-preview').attr('src', response.image_url + '?v=' + Date.now());
+                    $row.find('.replace-file-label').text('Pilih file...');
+                    input.value = '';
+                    $row.find('.replace-image-id').val(imageId);
+                    $button.addClass('d-none').prop('disabled', false).html('<i class="fas fa-check"></i>');
+                    Swal.fire({ 
+                        toast: true, 
+                        position: 'top-end', 
+                        icon: 'success', 
+                        title: response.message, 
+                        showConfirmButton: false, 
+                        timer: 1800 
+                    });
+                } else {
+                    $button.prop('disabled', false).html('<i class="fas fa-check"></i>');
+                    Swal.fire('Gagal', response.message || 'Foto gagal diganti.', 'error');
+                }
+            },
+            error: function() {
+                $button.prop('disabled', false).html('<i class="fas fa-check"></i>');
+                Swal.fire('Gagal', 'Terjadi kesalahan saat mengganti foto.', 'error');
+            }
+        });
+    });
+
+    $('#wrapperDetail').on('click', '.preview-image', function() {
+        var imageSource = $(this).attr('src');
+        if (imageSource && imageSource.indexOf('no-image.png') === -1) {
+            $('#imagePreview').attr('src', imageSource);
+            $('#imagePreviewModal').modal('show');
+        }
+    });
+
+    // pastikan cuma 1 toggle "Gambar Utama" yang aktif, baik gambar lama maupun baru
+    var primaryToggleSyncing = false;
+    $('#wrapperDetail').on('change', '.primary-toggle', function() {
+        var $thisRow = $(this).closest('.row-detail');
+        var isExisting = $thisRow.data('existing') == 1;
+
+        if (primaryToggleSyncing) {
+            return;
+        }
+
+        if (!$(this).prop('checked')) {
+            if (isExisting) {
+                primaryToggleSyncing = true;
+                $(this).bootstrapToggle('on');
+                primaryToggleSyncing = false;
+            }
+            return;
+        }
+
+        var previousPrimary = $('#wrapperDetail .row-detail').not($thisRow).filter(function() {
+            return $(this).find('.primary-toggle').prop('checked');
+        }).first();
+
+        primaryToggleSyncing = true;
+        $('#wrapperDetail .row-detail').not($thisRow).each(function() {
+            $(this).find('.primary-toggle').bootstrapToggle('off');
+        });
+        primaryToggleSyncing = false;
+
+        if (isExisting) {
+            var imageId = $thisRow.find('.existing-image-id').val();
+            $.post('<?= base_url('product/set_primary_image') ?>/' + imageId, {
+                product_id: '<?= $product->product_id ?>'
+            }, function(response) {
+                if (response.status === 'success') {
+                    Swal.fire({ 
+                        toast: true, 
+                        position: 'top-end', 
+                        icon: 'success', 
+                        title: response.message,
+                        showConfirmButton: false, 
+                        timer: 1400 
+                    });
+                } else {
+                    restorePreviousPrimary(previousPrimary, $thisRow);
+                    Swal.fire('Gagal', response.message || 'Gambar utama gagal diubah.', 'error');
+                }
+            }, 'json').fail(function() {
+                restorePreviousPrimary(previousPrimary, $thisRow);
+                Swal.fire('Gagal', 'Terjadi kesalahan saat mengubah gambar utama.', 'error');
+            });
+        }
+    });
+
+    function restorePreviousPrimary($previousPrimary, $currentRow) {
+        primaryToggleSyncing = true;
+        $currentRow.find('.primary-toggle').bootstrapToggle('off');
+        if ($previousPrimary && $previousPrimary.length) {
+            $previousPrimary.find('.primary-toggle').bootstrapToggle('on');
+        }
+        primaryToggleSyncing = false;
+    }
+
+    // ===== SUBMIT FORM =====
     $('#form_edit_product').on('submit', function(e) {
         e.preventDefault();
 
         $('.text-danger').text('');
+
+        // hapus dulu hidden input primary lama kalau ada (jaga-jaga submit ulang)
+        $('input[name="is_primary_row_type"], input[name="is_primary_value"]').remove();
+
+        // tentukan baris mana yang jadi primary, kirim tipe + ID/index-nya
+        var newImageIndex = 0;
+        $('#wrapperDetail .row-detail').each(function() {
+            var isExisting = $(this).data('existing') == 1;
+
+            if ($(this).find('.primary-toggle').prop('checked')) {
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'is_primary_row_type',
+                    value: isExisting ? 'existing' : 'new'
+                }).appendTo('#form_edit_product');
+
+                var value = isExisting
+                    ? $(this).find('.existing-image-id').val()
+                    : newImageIndex;
+
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'is_primary_value',
+                    value: value
+                }).appendTo('#form_edit_product');
+            }
+
+            if (!isExisting) {
+                newImageIndex++;
+            }
+        });
 
         Swal.fire({
             title: 'Update data ini?',
@@ -140,10 +579,14 @@ window.addEventListener('load', function () {
     });
 
     function submitEditProduct() {
+        var formData = new FormData(document.getElementById('form_edit_product'));
+
         $.ajax({
             url: '<?= base_url('product/update') ?>',
             type: 'POST',
-            data: $('#form_edit_product').serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             dataType: 'json',
             beforeSend: function() {
                 Swal.fire({

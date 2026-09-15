@@ -108,9 +108,11 @@ class Product extends MY_Controller{
             return;
         }
 
+        $this->db->trans_begin();
+
         $product_code = $this->Product_model->generate_product_code();
 
-        $data = array(
+        $product_id = $this->Product_model->insert_header([
             'product_code' => $product_code,
             'created_by'   => $this->session->userdata('user_id'),
             'product_name' => $this->input->post('product_name'),
@@ -120,23 +122,76 @@ class Product extends MY_Controller{
             'product_type' => $this->input->post('product_type'),
             'description'  => $this->input->post('description'),
             'status'       => $this->input->post('status'),
-        );
+        ]);
 
-        $this->Product_model->insert($data);
+        $product_images = [];
+        $upload_errors = [];
+        $primary_index = $this->input->post('is_primary_index');
+        if (!empty($_FILES['product_images']['name'][0])) {
+            $files = $_FILES['product_images'];
+            $file_count = count($files['name']);
 
-        if ($this->db->affected_rows() > 0) {
-            $this->session->set_flashdata('success', 'Product ' . $product_code . ' berhasil ditambahkan.');
+            for ($i = 0; $i < $file_count; $i++) {
+                if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                    // Setup upload configuration for this specific file
+                    $config['upload_path']   = './uploads/products/';
+                    $config['allowed_types'] = 'jpg|jpeg|png|gif';
+                    $config['max_size']      = 2048; // 2MB
+                    $config['encrypt_name']  = TRUE; // Rename with random name
+
+                    // Upload the file
+                    $this->load->library('upload', $config);
+                    $_FILES['userfile'] = array(
+                        'name'     => $files['name'][$i],
+                        'type'     => $files['type'][$i],
+                        'tmp_name' => $files['tmp_name'][$i],
+                        'error'    => $files['error'][$i],
+                        'size'     => $files['size'][$i],
+                    );
+
+                    if ($this->upload->do_upload('userfile')) {
+                        $upload_data = $this->upload->data();
+                        $product_images[] = array(
+                            'product_id'  => $product_id,
+                            'file_name'   => $upload_data['file_name'],
+                            'is_primary'  => ((string) $i === (string) $primary_index) ? 1 : 0,
+                            'sort_order'  => $i + 1,
+                            'uploaded_at' => date('Y-m-d H:i:s'),
+                        );
+                    } else {
+                        // Handle upload error for this specific file
+                        $upload_errors[] = $this->upload->display_errors('', '');
+                    }
+                }
+            }
+        }
+
+        if (!empty($upload_errors)) {
+            $this->db->trans_rollback();
             echo json_encode([
-                'status'  => 'success',
-                'message' => 'Product ' . $product_code . ' berhasil ditambahkan.'
+                'status' => 'failed',
+                'message' => implode(' ', $upload_errors)
             ]);
-        } else {
-            $this->session->set_flashdata('error', 'Gagal menyimpan data product.');
+            return;
+        }
+
+        $this->Product_model->insert_detail($product_images);
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
             echo json_encode([
                 'status'  => 'failed',
                 'message' => 'Gagal menyimpan data.'
             ]);
+            return;
         }
+
+        $this->db->trans_commit();
+        echo json_encode([
+            'status'  => 'success',
+            'message' => 'Product ' . $product_code . ' berhasil ditambahkan.'
+        ]);
+
     }
 
     public function edit($id){
@@ -155,6 +210,7 @@ class Product extends MY_Controller{
         $data['product_type']   = $this->Product_model->get_product_type();
         $data['product_status'] = $this->Product_model->get_status();
         $data['product']        = $product;
+        $data['product_images'] = $this->Product_model->get_images($id);
         $data['mode']           = 'edit';
         $data['active_status_id']     = $this->Product_model->get_status_id_by_name('Aktif');
         $data['inactive_status_id']   = $this->Product_model->get_status_id_by_name('Nonaktif');
@@ -200,7 +256,142 @@ class Product extends MY_Controller{
         );
         // catatan: product_code TIDAK diubah saat edit, biarkan tetap seperti data lama
 
+        $this->db->trans_begin();
+
         $this->Product_model->update($product_id, $data);
+
+        $deleted_image_ids = $this->input->post('deleted_image_id');
+        if (!empty($deleted_image_ids)) {
+            foreach ((array) $deleted_image_ids as $image_id) {
+                $this->Product_model->delete_image($product_id, $image_id);
+            }
+        }
+
+        $this->Product_model->set_images_not_primary($product_id);
+
+        $primary_type = $this->input->post('is_primary_row_type');
+        $primary_value = $this->input->post('is_primary_value');
+        $primary_type = is_array($primary_type) ? end($primary_type) : $primary_type;
+        $primary_value = is_array($primary_value) ? end($primary_value) : $primary_value;
+
+        if ($primary_type === 'existing' && is_numeric($primary_value)) {
+            $this->Product_model->set_image_primary($product_id, $primary_value);
+        }
+
+        $product_images = [];
+        $new_image_ids = [];
+        $upload_errors = [];
+        if (!empty($_FILES['product_images']['name'][0])) {
+            $files = $_FILES['product_images'];
+            $file_count = count($files['name']);
+
+            for ($i = 0; $i < $file_count; $i++) {
+                if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+                    continue;
+                }
+
+                $config = [
+                    'upload_path'   => './uploads/products/',
+                    'allowed_types' => 'jpg|jpeg|png|gif',
+                    'max_size'      => 2048,
+                    'encrypt_name'  => TRUE,
+                ];
+                $this->load->library('upload', $config);
+                $_FILES['userfile'] = [
+                    'name'     => $files['name'][$i],
+                    'type'     => $files['type'][$i],
+                    'tmp_name' => $files['tmp_name'][$i],
+                    'error'    => $files['error'][$i],
+                    'size'     => $files['size'][$i],
+                ];
+
+                if ($this->upload->do_upload('userfile')) {
+                    $upload_data = $this->upload->data();
+                    $product_images[] = [
+                        'product_id'  => $product_id,
+                        'file_name'   => $upload_data['file_name'],
+                        'is_primary'  => 0,
+                        'sort_order'  => $i + 1,
+                        'uploaded_at' => date('Y-m-d H:i:s'),
+                    ];
+                } else {
+                    $upload_errors[] = $this->upload->display_errors('', '');
+                }
+            }
+        }
+
+        if (!empty($upload_errors)) {
+            $this->db->trans_rollback();
+            echo json_encode(['status' => 'failed', 'message' => implode(' ', $upload_errors)]);
+            return;
+        }
+
+        $replace_files = $_FILES['replace_images'] ?? null;
+        $replace_image_ids = (array) $this->input->post('replace_image_ids');
+        if ($replace_files && !empty($replace_files['name'])) {
+            foreach ($replace_files['name'] as $i => $original_name) {
+                if (empty($original_name) || ($replace_files['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                    continue;
+                }
+
+                $config = [
+                    'upload_path'   => './uploads/products/',
+                    'allowed_types' => 'jpg|jpeg|png|gif',
+                    'max_size'      => 2048,
+                    'encrypt_name'  => TRUE,
+                ];
+                $this->load->library('upload', $config);
+                $_FILES['userfile'] = [
+                    'name'     => $replace_files['name'][$i],
+                    'type'     => $replace_files['type'][$i],
+                    'tmp_name' => $replace_files['tmp_name'][$i],
+                    'error'    => $replace_files['error'][$i],
+                    'size'     => $replace_files['size'][$i],
+                ];
+
+                if (!$this->upload->do_upload('userfile')) {
+                    $upload_errors[] = $this->upload->display_errors('', '');
+                    continue;
+                }
+
+                $image_id = $replace_image_ids[$i] ?? null;
+                $old_image = $this->Product_model->get_image($product_id, $image_id);
+                $upload_data = $this->upload->data();
+                if (!$old_image || !$this->Product_model->update_image($product_id, $image_id, $upload_data['file_name'])) {
+                    @unlink('./uploads/products/' . $upload_data['file_name']);
+                    $upload_errors[] = 'Foto pengganti tidak dapat disimpan.';
+                    continue;
+                }
+
+                if (!empty($old_image->file_name)) {
+                    @unlink('./uploads/products/' . $old_image->file_name);
+                }
+            }
+        }
+
+        if (!empty($upload_errors)) {
+            $this->db->trans_rollback();
+            echo json_encode(['status' => 'failed', 'message' => implode(' ', $upload_errors)]);
+            return;
+        }
+
+        if (!empty($product_images)) {
+            $new_image_ids = $this->Product_model->insert_detail($product_images);
+        }
+
+        if ($primary_type === 'new' && is_numeric($primary_value) && isset($new_image_ids[(int) $primary_value])) {
+            $this->Product_model->set_image_primary($product_id, $new_image_ids[(int) $primary_value]);
+        } elseif ($primary_type !== 'existing' && $primary_type !== 'new') {
+            $this->Product_model->set_first_image_primary($product_id);
+        }
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            echo json_encode(['status' => 'failed', 'message' => 'Gagal memperbarui data product.']);
+            return;
+        }
+
+        $this->db->trans_commit();
         $this->session->set_flashdata('success', 'Product berhasil diperbarui.');
         echo json_encode([
             'status'  => 'success',
@@ -229,5 +420,150 @@ class Product extends MY_Controller{
             'status'  => 'success',
             'message' => 'Product ' . $product->product_code . ' berhasil dihapus.'
         ]);
+    }
+
+    public function replace_image($image_id){
+        $product_id = $this->input->post('product_id');
+        $image = $this->Product_model->get_image($product_id, $image_id);
+
+        if (!$image) {
+            echo json_encode(['status' => 'failed', 'message' => 'Data foto tidak ditemukan.']);
+            return;
+        }
+
+        if (empty($_FILES['image']['name'])) {
+            echo json_encode(['status' => 'failed', 'message' => 'Silakan pilih foto pengganti.']);
+            return;
+        }
+
+        $config = [
+            'upload_path'   => './uploads/products/',
+            'allowed_types' => 'jpg|jpeg|png|gif',
+            'max_size'      => 2048,
+            'encrypt_name'  => TRUE,
+        ];
+        $this->load->library('upload', $config);
+
+        if (!$this->upload->do_upload('image')) {
+            echo json_encode(['status' => 'failed', 'message' => strip_tags($this->upload->display_errors('', ''))]);
+            return;
+        }
+
+        $upload_data = $this->upload->data();
+        if (!$this->Product_model->update_image($product_id, $image_id, $upload_data['file_name'])) {
+            @unlink('./uploads/products/' . $upload_data['file_name']);
+            echo json_encode(['status' => 'failed', 'message' => 'Foto gagal diperbarui.']);
+            return;
+        }
+
+        if (!empty($image->file_name)) {
+            @unlink('./uploads/products/' . $image->file_name);
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Foto berhasil diganti.',
+            'image_url' => base_url('uploads/products/' . rawurlencode($upload_data['file_name']))
+        ]);
+    }
+
+    public function add_image(){
+        $product_id = $this->input->post('product_id');
+        $product = $this->Product_model->get_by_id($product_id);
+
+        if (!$product) {
+            echo json_encode(['status' => 'failed', 'message' => 'Data product tidak ditemukan.']);
+            return;
+        }
+
+        if (empty($_FILES['image']['name'])) {
+            echo json_encode(['status' => 'failed', 'message' => 'Silakan pilih foto.']);
+            return;
+        }
+
+        $config = [
+            'upload_path'   => './uploads/products/',
+            'allowed_types' => 'jpg|jpeg|png|gif',
+            'max_size'      => 2048,
+            'encrypt_name'  => TRUE,
+        ];
+        $this->load->library('upload', $config);
+
+        if (!$this->upload->do_upload('image')) {
+            echo json_encode(['status' => 'failed', 'message' => strip_tags($this->upload->display_errors('', ''))]);
+            return;
+        }
+
+        $upload_data = $this->upload->data();
+        $is_primary = $this->input->post('is_primary') == '1' ? 1 : 0;
+        if ($is_primary) {
+            $this->Product_model->set_images_not_primary($product_id);
+        }
+
+        $image_ids = $this->Product_model->insert_detail([[
+            'product_id'  => $product_id,
+            'file_name'   => $upload_data['file_name'],
+            'is_primary'  => $is_primary,
+            'sort_order'  => count($this->Product_model->get_images($product_id)) + 1,
+            'uploaded_at' => date('Y-m-d H:i:s'),
+        ]]);
+
+        if (empty($image_ids)) {
+            @unlink('./uploads/products/' . $upload_data['file_name']);
+            echo json_encode(['status' => 'failed', 'message' => 'Foto gagal disimpan.']);
+            return;
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Foto berhasil disimpan.',
+            'image_id' => $image_ids[0],
+            'image_url' => base_url('uploads/products/' . rawurlencode($upload_data['file_name']))
+        ]);
+    }
+
+    public function set_primary_image($image_id){
+        $product_id = $this->input->post('product_id');
+        $image = $this->Product_model->get_image($product_id, $image_id);
+
+        if (!$image) {
+            echo json_encode(['status' => 'failed', 'message' => 'Data foto tidak ditemukan.']);
+            return;
+        }
+
+        $this->db->trans_begin();
+        $this->Product_model->set_images_not_primary($product_id);
+        $this->Product_model->set_image_primary($product_id, $image_id);
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            echo json_encode(['status' => 'failed', 'message' => 'Gambar utama gagal diubah.']);
+            return;
+        }
+
+        $this->db->trans_commit();
+        echo json_encode(['status' => 'success', 'message' => 'Gambar utama berhasil diubah.']);
+    }
+
+    public function delete_image($image_id){
+        $product_id = $this->input->post('product_id');
+        $image = $this->Product_model->get_image($product_id, $image_id);
+
+        if (!$image) {
+            echo json_encode(['status' => 'failed', 'message' => 'Data foto tidak ditemukan.']);
+            return;
+        }
+
+        if (!$this->Product_model->delete_image($product_id, $image_id)) {
+            echo json_encode(['status' => 'failed', 'message' => 'Foto gagal dihapus.']);
+            return;
+        }
+
+        if (!empty($image->file_name)) {
+            @unlink('./uploads/products/' . $image->file_name);
+        }
+
+        $this->Product_model->set_first_image_primary($product_id);
+        echo json_encode(['status' => 'success', 'message' => 'Foto berhasil dihapus.']);
     }
 }

@@ -327,6 +327,26 @@ class Approve extends MY_Controller {
         ]);
     }
 
+    public function delete($approval_id) {
+        $this->load->model('Approve_model');
+        $result = $this->Approve_model->delete_header_and_detail($approval_id);
+
+        if ($result) {
+            $this->session->set_flashdata('success', 'Data approval berhasil dihapus.');
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'Data approval berhasil dihapus.'
+            ]);
+        } else {
+            // Gagal
+            $this->session->set_flashdata('error', 'Gagal menghapus data approval. Silakan coba lagi.');
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'Gagal menghapus data approval. Silakan coba lagi.'
+            ]);
+        }
+    }
+
 
     
     

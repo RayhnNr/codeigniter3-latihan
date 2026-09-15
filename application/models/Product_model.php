@@ -172,9 +172,9 @@ class Product_model extends CI_Model
         return 'PRD' . $formatted;
     }
 
-    public function insert($data){
-        return $this->db->insert($this->table, $data);
-    }
+    // public function insert($data){
+    //     return $this->db->insert($this->table, $data);
+    // }
 
 
     // public function get_product_status(){
@@ -207,13 +207,107 @@ class Product_model extends CI_Model
         return $query->row();
     }
 
+    // public function update($id, $data){
+    //     $this->db->where('product_id', $id);
+    //     return $this->db->update($this->table, $data);
+    // }
+
+    // public function delete($id) {
+    //     $this->db->where('product_id', $id);
+    //     return $this->db->delete('products');
+    // }
+
+
+    public function insert_header($data){
+        $this->db->insert($this->table, $data);
+        return $this->db->insert_id();
+    }
+
+    public function insert_detail($data){
+        if (!empty($data)) {
+            $ids = [];
+            foreach ($data as $row) {
+                $this->db->insert('product_images', $row);
+                $ids[] = $this->db->insert_id();
+            }
+            return $ids;
+        }
+
+        return [];
+    }
+
+    public function get_images($product_id){
+        return $this->db
+            ->where('product_id', $product_id)
+            ->order_by('sort_order', 'ASC')
+            ->order_by('product_image_id', 'ASC')
+            ->get('product_images')
+            ->result();
+    }
+
+    public function get_image($product_id, $image_id){
+        return $this->db
+            ->where('product_id', $product_id)
+            ->where('product_image_id', $image_id)
+            ->get('product_images')
+            ->row();
+    }
+
+    public function update_image($product_id, $image_id, $file_name){
+        return $this->db
+            ->where('product_id', $product_id)
+            ->where('product_image_id', $image_id)
+            ->update('product_images', ['file_name' => $file_name]);
+    }
+
+    public function delete_image($product_id, $image_id){
+        return $this->db
+            ->where('product_id', $product_id)
+            ->where('product_image_id', $image_id)
+            ->delete('product_images');
+    }
+
+    public function set_images_not_primary($product_id){
+        return $this->db
+            ->where('product_id', $product_id)
+            ->update('product_images', ['is_primary' => 0]);
+    }
+
+    public function set_image_primary($product_id, $image_id){
+        return $this->db
+            ->where('product_id', $product_id)
+            ->where('product_image_id', $image_id)
+            ->update('product_images', ['is_primary' => 1]);
+    }
+
+    public function set_first_image_primary($product_id){
+        $image = $this->db
+            ->where('product_id', $product_id)
+            ->order_by('sort_order', 'ASC')
+            ->order_by('product_image_id', 'ASC')
+            ->get('product_images')
+            ->row();
+
+        if ($image) {
+            return $this->set_image_primary($product_id, $image->product_image_id);
+        }
+
+        return true;
+    }
+
     public function update($id, $data){
         $this->db->where('product_id', $id);
         return $this->db->update($this->table, $data);
     }
 
-    public function delete($id) {
+    public function delete($id){
+        $this->db->trans_start();
         $this->db->where('product_id', $id);
-        return $this->db->delete('products');
+        $this->db->delete('product_images');
+        $this->db->where('product_id', $id);
+        $this->db->delete($this->table);
+        $this->db->trans_complete();
+
+        return $this->db->trans_status();
     }
 }
