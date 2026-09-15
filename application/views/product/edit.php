@@ -109,7 +109,7 @@
 <template id="rowTemplateExisting">
     <div class="row-detail form-row align-items-center mb-3 pb-3 border-bottom" data-existing="1">
         <div class="col-md-2 text-center">
-            <img src="" class="img-preview img-thumbnail existing-img preview-image" alt="Preview gambar" style="max-height: 80px; max-width: 100%; object-fit: cover; cursor: pointer;">
+            <img src="" class="img-preview img-thumbnail existing-img preview-image" alt="Preview gambar" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
         </div>
 
         <div class="col-md-5">
@@ -142,7 +142,7 @@
 <template id="rowTemplateNew">
     <div class="row-detail form-row align-items-center mb-3 pb-3 border-bottom" data-existing="0">
         <div class="col-md-2 text-center">
-            <img src="<?= base_url('assets/img/no-image.png') ?>" class="img-preview img-thumbnail preview-image" alt="Preview gambar" style="max-height: 80px; max-width: 100%; object-fit: cover; cursor: pointer;">
+            <img src="<?= base_url('assets/img/no-image.svg') ?>" class="img-preview img-thumbnail preview-image" alt="No Image Available" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
         </div>
 
         <div class="col-md-5">
@@ -457,7 +457,7 @@ window.addEventListener('load', function () {
 
     $('#wrapperDetail').on('click', '.preview-image', function() {
         var imageSource = $(this).attr('src');
-        if (imageSource && imageSource.indexOf('no-image.png') === -1) {
+        if (imageSource && imageSource.indexOf('no-image.svg') === -1) {
             $('#imagePreview').attr('src', imageSource);
             $('#imagePreviewModal').modal('show');
         }

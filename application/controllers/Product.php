@@ -65,10 +65,20 @@ class Product extends MY_Controller{
     }
 
     public function get_detail($id){
-        $data = $this->Product_model->get_by_id($id);
+        $product_data = $this->Product_model->get_product_detail($id);
 
-        header('Content-Type: application/json');
-        echo json_encode($data);
+        if (!$product_data) {
+            $this->output
+                ->set_status_header(404)
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['message' => 'Product tidak ditemukan.']));
+            return;
+        }
+
+        echo json_encode([
+            'product'       => $product_data['header'],
+            'product_images' => $product_data['images']
+        ]);
     }
 
     public function create(){

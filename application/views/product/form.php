@@ -97,7 +97,7 @@
 <template id="rowTemplate">
     <div class="row-detail form-row align-items-center mb-3 pb-3 border-bottom">
         <div class="col-md-2 text-center">
-            <img src="<?= base_url('assets/img/no-image.png') ?>" class="img-preview img-thumbnail" style="max-height: 80px; max-width: 100%; object-fit: cover;">
+            <img src="<?= base_url('assets/img/no-image.svg') ?>" class="img-preview img-thumbnail" alt="No Image Available" style="width: 80px; height: 80px; object-fit: cover;">
         </div>
 
         <div class="col-md-5">

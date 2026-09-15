@@ -71,7 +71,7 @@
 </div>
 
 <div class="modal fade" id="modalDetail" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
@@ -83,60 +83,79 @@
                 </button>
             </div>
             <div class="modal-body">
-                <table class="table table-borderless table-sm mb-0">
-                    <tr>
-                        <th width="150" class="text-muted">Code Product</th>
-                        <td width="10">:</td>
-                        <td id="detail-code" class="font-weight-bold"></td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Nama Product</th>
-                        <td>:</td>
-                        <td id="detail-name" class="font-weight-bold"></td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Category</th>
-                        <td>:</td>
-                        <td id="detail-category"></td>
-                    </tr>
-                    
-                    <tr>
-                        <th class="text-muted">Brand</th>
-                        <td>:</td>
-                        <td id="detail-brand"></td>
-                    </tr>
-                    <tr>
-                    <th class="text-muted">Unit</th>
-                        <td>:</td>
-                        <td id="detail-unit"></td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Product Type</th>
-                        <td>:</td>
-                        <td id="detail-type"></td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Status</th>
-                        <td>:</td>
-                        <td id="detail-status"></td>
-                    </tr>
-                    <tr>
-                        <th class="text-muted">Dibuat Oleh</th>
-                        <td>:</td>
-                        <td id="detail-create-by"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="3">
-                            <hr class="my-2">
-                        </td>
-                    </tr>
-                </table>
-                <div class="card">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless table-sm mb-0">
+                            <tr>
+                                <th width="150" class="text-muted">Code Product</th>
+                                <td width="10">:</td>
+                                <td id="detail-code" class="font-weight-bold"></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Nama Product</th>
+                                <td>:</td>
+                                <td id="detail-name" class="font-weight-bold"></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Category</th>
+                                <td>:</td>
+                                <td id="detail-category"></td>
+                            </tr>
+                            
+                            <tr>
+                                <th class="text-muted">Brand</th>
+                                <td>:</td>
+                                <td id="detail-brand"></td>
+                            </tr>
+                            <tr>
+                            <th class="text-muted">Unit</th>
+                                <td>:</td>
+                                <td id="detail-unit"></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Product Type</th>
+                                <td>:</td>
+                                <td id="detail-type"></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Status</th>
+                                <td>:</td>
+                                <td id="detail-status"></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Dibuat Oleh</th>
+                                <td>:</td>
+                                <td id="detail-create-by"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <hr class="my-2">
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-light py-2">
+                                <strong><i class="fas fa-align-left mr-1"></i> Deskripsi</strong>
+                            </div>
+                            <div class="card-body py-2">
+                                <p id="detail-deskripsi" class="text-justify mb-0"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ===== TAMBAHAN: GALERI FOTO ===== -->
+                <div class="card mt-3">
                     <div class="card-header bg-light py-2">
-                        <strong><i class="fas fa-align-left mr-1"></i> Deskripsi</strong>
+                        <strong><i class="fas fa-images mr-1"></i> Foto Produk</strong>
                     </div>
                     <div class="card-body py-2">
-                        <p id="detail-deskripsi" class="text-justify mb-0"></p>
+                        <div class="row" id="detail-images-wrapper">
+                            <!-- diisi otomatis via JS -->
+                        </div>
+                        <p class="text-muted mb-0 d-none" id="detail-no-image">Belum ada foto produk.</p>
                     </div>
                 </div>
             </div>
@@ -275,26 +294,67 @@ function detailData(id) {
         type: 'GET',
         dataType: 'json',
         success: function (response) {
-            $('#detail-code-header').text(response.product_code);
-            $('#detail-code').text(response.product_code);
-            $('#detail-name').text(response.product_name);
-            $('#detail-category').text(response.category_name);
-            $('#detail-brand').text(response.brand_name);
-            $('#detail-unit').text(response.unit_name);
-            $('#detail-type').text(response.product_type_name);
-            const statusBadge = response.status == 1
+            const data = response.product;
+            const images = response.product_images;
+
+            $('#detail-code-header').text(data.product_code);
+            $('#detail-code').text(data.product_code);
+            $('#detail-name').text(data.product_name);
+            $('#detail-category').text(data.category_name);
+            $('#detail-brand').text(data.brand_name);
+            $('#detail-unit').text(data.unit_name);
+            $('#detail-type').text(data.product_type_name);
+
+            const statusBadge = data.status == 1
                 ? '<span class="badge badge-success">Aktif</span>'
                 : '<span class="badge badge-danger">Tidak Aktif</span>';
             $('#detail-status').html(statusBadge);
-            $('#detail-create-by').text(response.created_by_username ? response.created_by_username : '-');
-            $('#detail-deskripsi').text(response.description);
+
+            $('#detail-create-by').text(data.created_by_username ? data.created_by_username : '-');
+            $('#detail-deskripsi').text(data.description);
+
+            // ===== TAMBAHAN: render galeri gambar =====
+            const $wrapper = $('#detail-images-wrapper');
+            $wrapper.empty();
+
+            if (images && images.length > 0) {
+                $('#detail-no-image').addClass('d-none');
+
+                // urutkan: gambar primary duluan, sisanya ikut sort_order
+                var sortedImages = images.slice().sort(function(a, b) {
+                    if (a.is_primary != b.is_primary) {
+                        return b.is_primary - a.is_primary;
+                    }
+                    return (a.sort_order || 0) - (b.sort_order || 0);
+                });
+
+                sortedImages.forEach(function(img) {
+                    var primaryBadge = img.is_primary == 1
+                        ? '<span class="badge badge-success position-absolute" style="top:5px; right:5px;">Utama</span>'
+                        : '';
+
+                    $wrapper.append(`
+                        <div class="col-4 col-md-3 mb-3">
+                            <div class="position-relative">
+                                <img src="<?= base_url('uploads/products/') ?>${img.file_name}" 
+                                     class="img-thumbnail w-100" 
+                                     style="height: 100px; object-fit: cover; cursor: pointer;"
+                                     onclick="window.open(this.src, '_blank')">
+                                ${primaryBadge}
+                            </div>
+                        </div>
+                    `);
+                });
+            } else {
+                $('#detail-no-image').removeClass('d-none');
+            }
+
             $('#modalDetail').modal('show');
         },
         error: function () {
             Swal.fire('Gagal', 'Data tidak ditemukan', 'error');
         }
     });
-
 }
 
 

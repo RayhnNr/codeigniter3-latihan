@@ -310,4 +310,42 @@ class Product_model extends CI_Model
 
         return $this->db->trans_status();
     }
+
+    public function get_product_detail($product_id){
+        $this->db->select('
+            products.*, 
+            categories.category_name, 
+            brands.brand_name, 
+            units.unit_name, 
+            product_type.product_type_name, 
+            product_status.product_status_name,
+            users.username as created_by_username
+        ');
+        $this->db->from($this->table);
+        $this->db->join('categories', 'categories.category_id = products.category_id', 'left');
+        $this->db->join('brands', 'brands.brand_id = products.brand_id', 'left');
+        $this->db->join('units', 'units.unit_id = products.unit_id', 'left');
+        $this->db->join('product_type', 'product_type.product_type_id = products.product_type', 'left');
+        $this->db->join('product_status', 'product_status.product_status_id = products.status', 'left');
+        $this->db->join('users', 'users.user_id = products.created_by', 'left');
+        $this->db->where('products.product_id', $product_id);
+
+        $header = $this->db->get()->row();
+
+        if (!$header) {
+            return null;
+        }
+
+        $this->db->select('*');
+        $this->db->from('product_images');
+        $this->db->where('product_id', $product_id);
+        $this->db->order_by('sort_order', 'ASC');
+        $this->db->order_by('product_image_id', 'ASC');
+        $images = $this->db->get()->result();
+
+        return [
+            'header' => $header,
+            'images' => $images
+        ];
+    }
 }
