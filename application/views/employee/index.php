@@ -57,7 +57,7 @@
 </div>
 
 <div class="modal fade" id="modalDetail" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
@@ -67,48 +67,81 @@
                 </button>
             </div>
             <div class="modal-body">
-                <table class="table table-borderless">
-                    <tr>
-                        <th width="150">Code</th>
-                        <td>:</td>
-                        <td id="detail-code"></td>
-                    </tr>
-                    <tr>
-                        <th>Nama</th>
-                        <td>:</td>
-                        <td id="detail-name"></td>
-                    </tr>
-                    <tr>
-                        <th>Role</th>
-                        <td>:</td>
-                        <td id="detail-role"></td>
-                    </tr>
-                    <tr>
-                        <th>Departemen</th>
-                        <td>:</td>
-                        <td id="detail-department"></td>
-                    </tr>
-                    <tr>
-                        <th>Sub Departemen</th>
-                        <td>:</td>
-                        <td id="detail-sub-department"></td>
-                    </tr>
-                    <tr>
-                        <th>Posisi</th>
-                        <td>:</td>
-                        <td id="detail-position"></td>
-                    </tr>
-                    <tr>
-                        <th>Salary</th>
-                        <td>:</td>
-                        <td id="detail-salary"></td>
-                    </tr>
-                    <tr>
-                        <th>Join Date</th>
-                        <td>:</td>
-                        <td id="detail-join-date"></td>
-                    </tr>
-                </table>
+
+                <!-- Profile -->
+                <div class="d-flex align-items-center mb-4">
+                    <img src="" id="detail-photo"
+                        class="rounded-circle mr-3"
+                        width="100"
+                        height="100"
+                        style="object-fit: cover;">
+
+                    <div>
+                        <h5 class="mb-1" id="detail-name"></h5>
+                        <div class="text-muted mb-1" id="detail-position"></div>
+                        <small class="text-muted">
+                            <i class="fas fa-user mr-1"></i>
+                            <span id="detail-username"></span>
+                        </small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Information -->
+                <div class="row mt-3">
+
+                    <!-- Kolom kiri -->
+                    <div class="col-md-6">
+
+                        <div class="row mb-3">
+                            <div class="col-5 font-weight-bold">Code</div>
+                            <div class="col-7" id="detail-code"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 font-weight-bold">Departemen</div>
+                            <div class="col-7" id="detail-department"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 font-weight-bold">Sub Departemen</div>
+                            <div class="col-7" id="detail-sub-department"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 font-weight-bold">Salary</div>
+                            <div class="col-7" id="detail-salary"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- Kolom kanan -->
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-5 font-weight-bold">Role</div>
+                            <div class="col-7" id="detail-role"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 font-weight-bold">Email</div>
+                            <div class="col-7" id="detail-email"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 font-weight-bold">No. Telepon</div>
+                            <div class="col-7" id="detail-phone"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 font-weight-bold">Join Date</div>
+                            <div class="col-7" id="detail-join-date"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
@@ -224,14 +257,18 @@ function detailData(id) {
         dataType: 'json',
         success: function (response) {
             $('#detail-code-header').text(response.employee_code);
+            $('#detail-photo').attr('src','<?= base_url('uploads/employees/photo/') ?>'+response.photo || '<?= base_url('assets/adminlte/dist/img/user2-160x160.jpg') ?>');
             $('#detail-code').text(response.employee_code);
             $('#detail-name').text(response.employee_name);
             $('#detail-role').text(response.role_name || '-');
             $('#detail-department').text(response.department_name || '-');
             $('#detail-sub-department').text(response.sub_department_name || '-');
-            $('#detail-position').text(response.position_name);
+            $('#detail-position').text(response.position_name || '-');
             $('#detail-salary').text('Rp ' + Number(response.salary).toLocaleString('id-ID'));
             $('#detail-join-date').text(response.join_date);
+            $('#detail-email').text(response.email || '-');
+            $('#detail-phone').text(response.nomor_hp || '-');
+            $('#detail-username').text(response.username || '-');
             $('#modalDetail').modal('show');
         },
         error: function () {

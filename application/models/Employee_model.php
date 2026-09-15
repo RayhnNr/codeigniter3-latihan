@@ -41,7 +41,7 @@ class Employee_model extends CI_Model
 
     // NO 42
     public function get_by_id($id){
-        $this->db->select('employees.*, departments.department_name, positions.position_name, sub_departments.sub_department_name, roles.name as role_name');
+        $this->db->select('employees.*, departments.department_name, positions.position_name, sub_departments.sub_department_name, roles.name as role_name, users.username, users.email, users.nomor_hp');
         $this->db->from($this->table);
         $this->db->join('departments', 'employees.department_id = departments.department_id', 'left');
         $this->db->join('positions', 'employees.position_id = positions.position_id', 'left');

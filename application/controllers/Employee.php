@@ -295,30 +295,27 @@ class Employee extends MY_Controller {
             return;
         }
 
-        // Cek apakah employee sudah punya akun
         $existing_account = $this->User_model->get_by_employee_id($id);
 
         // Validasi Employee
         $this->form_validation->set_rules('employee_name', 'Nama Employee', 'required|trim');
-        $this->form_validation->set_rules('departemen_id',  'Departemen',    'required');
+        $this->form_validation->set_rules('departemen_id', 'Departemen', 'required');
         $this->form_validation->set_rules('sub_department_id', 'Sub Department', 'numeric');
-        $this->form_validation->set_rules('position_id',    'Posisi',        'required');
-        $this->form_validation->set_rules('salary',         'Salary',        'required');
-        $this->form_validation->set_rules('status',         'Status',        'required');
+        $this->form_validation->set_rules('position_id', 'Posisi', 'required');
+        $this->form_validation->set_rules('salary', 'Salary', 'required');
+        $this->form_validation->set_rules('status', 'Status', 'required');
 
         // Validasi User
-        $this->form_validation->set_rules('username',    'Username',          'required|min_length[4]|max_length[50]');
-        $this->form_validation->set_rules('email',       'Email',             'required|valid_email');
-        $this->form_validation->set_rules('nomor_hp',    'Nomor HP',          'trim|max_length[20]');
-        $this->form_validation->set_rules('role_id',     'Role / Hak Akses',  'required');
-        $this->form_validation->set_rules('user_status', 'Status Akun User',  'required|in_list[0,1]');
+        $this->form_validation->set_rules('username', 'Username', 'required|min_length[4]|max_length[50]');
+        $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
+        $this->form_validation->set_rules('nomor_hp', 'Nomor HP', 'trim|max_length[20]');
+        $this->form_validation->set_rules('role_id', 'Role / Hak Akses', 'required');
+        $this->form_validation->set_rules('user_status', 'Status Akun User', 'required|in_list[0,1]');
 
         $password = (string) $this->input->post('password');
         if (!$existing_account) {
-            // Jika akun baru, password wajib diisi
             $this->form_validation->set_rules('password', 'Password', 'required|min_length[6]');
         } else {
-            // Jika akun sudah ada, password opsional (hanya divalidasi jika diisi)
             if ($password !== '') {
                 $this->form_validation->set_rules('password', 'Password', 'min_length[6]');
             }
@@ -341,15 +338,24 @@ class Employee extends MY_Controller {
 
         // Cek duplikasi username, email, nomor hp
         if ($this->User_model->username_exists($username, $exclude_uid)) {
-            echo json_encode(['status' => 'failed', 'errors' => ['username' => 'Username sudah digunakan.']]);
+            echo json_encode([
+                'status' => 'failed', 
+                'errors' => ['username' => 'Username sudah digunakan.']
+            ]);
             return;
         }
         if ($this->User_model->email_exists($email, $exclude_uid)) {
-            echo json_encode(['status' => 'failed', 'errors' => ['email' => 'Email sudah digunakan.']]);
+            echo json_encode([
+                'status' => 'failed', 
+                'errors' => ['email' => 'Email sudah digunakan.']
+            ]);
             return;
         }
         if ($this->User_model->nomor_hp_exists($nomor_hp, $exclude_uid)) {
-            echo json_encode(['status' => 'failed', 'errors' => ['nomor_hp' => 'Nomor HP sudah digunakan.']]);
+            echo json_encode([
+                'status' => 'failed', 
+                'errors' => ['nomor_hp' => 'Nomor HP sudah digunakan.']
+            ]);
             return;
         }
 
@@ -465,9 +471,15 @@ class Employee extends MY_Controller {
 
         if ($result['success']) {
             $this->session->set_flashdata('success', 'Employee dan Akun User berhasil diperbarui.');
-            echo json_encode(['status' => 'success', 'message' => 'Employee dan Akun User berhasil diperbarui.']);
+            echo json_encode([
+                'status' => 'success', 
+                'message' => 'Employee dan Akun User berhasil diperbarui.'
+            ]);
         } else {
-            echo json_encode(['status' => 'failed', 'message' => $result['message']]);
+            echo json_encode([
+                'status' => 'failed', 
+                'message' => $result['message']
+            ]);
         }
     }
 

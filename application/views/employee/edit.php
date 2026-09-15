@@ -148,11 +148,14 @@
                             <div id="old_bpjs_box">
                                 <small class="text-muted d-block mb-1">Kartu BPJS saat ini:</small>
                                 <?php if ($ext === 'pdf'): ?>
-                                    <div class="p-2 border rounded bg-light">
+                                    <a href="<?= htmlspecialchars($file_url) ?>" target="_blank" rel="noopener noreferrer" class="p-2 border rounded bg-light d-block text-decoration-none text-dark">
                                         <i class="fas fa-file-pdf text-danger mr-2 fa-lg"></i>
-                                        <a href="<?= $file_url ?>" target="_blank" rel="noopener noreferrer"><strong><?= htmlspecialchars($employee->bpjs_card) ?></strong></a>
-                                        <small class="text-muted d-block mt-1"><i class="fas fa-external-link-alt mr-1"></i>Klik untuk membuka file PDF</small>
-                                    </div>
+                                        <strong><?= htmlspecialchars($employee->bpjs_card) ?></strong>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-external-link-alt mr-1"></i>
+                                            Klik untuk membuka file PDF
+                                        </small>
+                                    </a>
                                 <?php else: ?>
                                     <img src="<?= $file_url ?>" alt="Kartu BPJS" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">
                                     <small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik kartu untuk memperbesar</small>

@@ -4,7 +4,7 @@
         <div class="card card-primary card-outline">
             <div class="card-body box-profile text-center">
                 <div class="profile-user-img d-flex align-items-center justify-content-center mx-auto mb-3"
-                     style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);font-size:2.5rem;color:#fff;">
+                    style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);font-size:2.5rem;color:#fff;">
                     <i class="fas fa-user"></i>
                 </div>
                 <h4 class="profile-username"><?= htmlspecialchars($user->username) ?></h4>
