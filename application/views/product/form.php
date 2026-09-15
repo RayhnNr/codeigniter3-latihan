@@ -110,7 +110,7 @@
         </div>
 
         <div class="col-md-3 text-center">
-            <label class="mb-1">Gambar Utama</label>
+            <label class="mb-1">Gambar Utama</label><br>
             <input type="checkbox" class="primary-toggle"
                    data-toggle="toggle" data-on="Ya" data-off="Tidak"
                    data-onstyle="success" data-offstyle="secondary" data-size="sm">

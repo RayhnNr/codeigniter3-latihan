@@ -1,8 +1,10 @@
 <div class="card">
     <div class="card-header">
-        <button class="btn btn-primary btn-sm" id="btn_add">
-            <i class="fas fa-plus"></i> Tambah Brand
-        </button>
+        <div class="card-tools">
+            <button class="btn btn-primary btn-sm" id="btn_add">
+                <i class="fas fa-plus"></i> Tambah Brand
+            </button>
+        </div>
     </div>
     <div class="card-body">
         <table class="table table-bordered table-striped" id="table-brand" style="width:100%">

@@ -1,8 +1,10 @@
 <div class="card">
     <div class="card-header">
-        <button class="btn btn-primary btn-sm" id="btn_add">
-            <i class="fas fa-plus"></i> Tambah Unit
-        </button>
+        <div class="card-tools">
+            <button class="btn btn-primary btn-sm" id="btn_add">
+                <i class="fas fa-plus"></i> Tambah Unit
+            </button>
+        </div>
     </div>
     <div class="card-body">
         <table class="table table-bordered table-striped" id="table-unit" style="width:100%">

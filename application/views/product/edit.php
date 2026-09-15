@@ -46,7 +46,7 @@
                         <small class="text-danger" id="error_brand_id"></small>
                     </div>
                     <div class="form-group">
-                        <label for="status_toggle">Status</label>
+                        <label for="status_toggle">Status</label><br>
                         <input type="hidden" name="status" id="status_hidden" value="<?= $product->status ?>">
                         <input type="checkbox" id="status_toggle" data-toggle="toggle" 
                             data-on="Aktif" data-off="Nonaktif" 
@@ -123,7 +123,7 @@
         </div>
 
         <div class="col-md-3 text-center">
-            <label class="mb-1">Gambar Utama</label>
+            <label class="mb-1">Gambar Utama</label><br>
             <input type="checkbox" class="primary-toggle" data-existing-primary="1"
                    data-toggle="toggle" data-on="Ya" data-off="Tidak"
                    data-onstyle="success" data-offstyle="secondary" data-size="sm">
@@ -155,7 +155,7 @@
         </div>
 
         <div class="col-md-3 text-center primary-control invisible">
-            <label class="mb-1">Gambar Utama</label>
+            <label class="mb-1">Gambar Utama</label><br>
             <input type="checkbox" class="primary-toggle"
                    data-toggle="toggle" data-on="Ya" data-off="Tidak"
                    data-onstyle="success" data-offstyle="secondary" data-size="sm">
@@ -192,7 +192,7 @@
 window.addEventListener('load', function () {
     $('.form-select2').select2({
         theme: 'bootstrap4',
-        width: '100%'
+        width: '100%',
     });
 
     $('#status_toggle').bootstrapToggle({

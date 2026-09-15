@@ -15,7 +15,7 @@
         </div>
 
         <div class="form-group">
-            <label>Status</label>
+            <label>Status</label><br>
             <input type="hidden" name="status" id="brands_status_value" value="<?= (int) $row->status ?>">
             <input type="checkbox" 
                 id="brands_status" 
