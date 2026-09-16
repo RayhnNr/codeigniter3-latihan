@@ -138,10 +138,10 @@
                     <div class="col-md-6">
                         <div class="card mt-3">
                             <div class="card-header bg-light py-2">
-                                <strong><i class="fas fa-barcode mr-1"></i> Barcode</strong>
+                                <strong><i class="fas fa-qrcode mr-1"></i> QR Code</strong>
                             </div>
                             <div class="card-body py-2 text-center">
-                                <svg id="detail-barcode"></svg>
+                                <div id="detail-qrcode"></div>
                             </div>
                         </div>
                         <div class="card">
@@ -216,8 +216,8 @@ window.addEventListener('load', function () {
                 data: null,
                 orderable: false,
                 searchable: false,
-                render: function (data, type, row) {
-                    return `<svg class="row-barcode" data-code="${row.product_code}" id="barcode-${row.product_id}"></svg>`;
+                render: function(data, type, row) {
+                    return `<div class="row-qrcode" data-code="${row.product_code}" id="qrcode-${row.product_id}"></div>`;
                 }
             },
             {
@@ -252,20 +252,20 @@ window.addEventListener('load', function () {
                 }
             }
         ],
-            drawCallback: function() {
-            // dipanggil setiap kali tabel selesai render baris
-            $('.row-barcode').each(function() {
+        drawCallback: function() {
+            $('.row-qrcode').each(function() {
                 var code = $(this).data('code');
+
+                $(this).empty();
+
                 try {
-                    JsBarcode(this, code, {
-                        format: "CODE128",
-                        width: 1,
-                        height: 30,
-                        displayValue: false,   // di tabel biasanya cukup gambar saja, tanpa teks (biar tidak makan tempat)
-                        margin: 0
+                    new QRCode(this, {
+                        text: code,
+                        width: 80,
+                        height: 80
                     });
                 } catch (e) {
-                    console.error('Gagal generate barcode untuk', code);
+                    console.error('Gagal generate QR Code untuk', code);
                 }
             });
         }
@@ -345,17 +345,16 @@ function detailData(id) {
             $('#detail-create-by').text(data.created_by_username ? data.created_by_username : '-');
             $('#detail-deskripsi').text(data.description);
             try {
-                JsBarcode("#detail-barcode", data.product_code, {
-                    format: "CODE128",
-                    width: 2,
-                    height: 50,
-                    displayValue: true,
-                    fontSize: 14,
-                    margin: 10
+                $('#detail-qrcode').empty();
+
+                new QRCode(document.getElementById('detail-qrcode'), {
+                    text: data.product_code,
+                    width: 150,
+                    height: 150
                 });
             } catch (e) {
-                console.error('Gagal generate barcode:', e);
-                $('#detail-barcode').closest('.card').hide();
+                console.error('Gagal generate QR Code:', e);
+                $('#detail-qrcode').closest('.card').hide();
             }
 
             // ===== TAMBAHAN: render galeri gambar =====

@@ -126,12 +126,12 @@
                     <label for="product_method">Metode Input</label>
                     <select class="form-control select2" id="product_method">
                         <option value="select">Pilih Produk</option>
-                        <option value="barcode">Scan Barcode</option>
+                        <option value="qrcode">Scan QR Code</option>
                     </select>
                 </div>
 
                 <div class="form-group d-none" id="field_product_code">
-                    <label for="product_code">Barcode / Kode Produk</label>
+                    <label for="product_code">QR Code / Kode Produk</label>
                     <input type="text" class="form-control" id="product_code" autocomplete="off">
                     <small class="text-danger d-block" id="error_product_code"></small>
                 </div>

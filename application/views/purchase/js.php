@@ -334,11 +334,11 @@
 			resetProductForm();
 		});
 
-		$('#product_method').on('change', function () {
+		$('#product_method').on('change', function() {
 			var method = $(this).val();
 			clearProductErrors();
 
-			if (method === 'barcode') {
+			if (method === 'qrcode') {
 				$('#field_product_code').removeClass('d-none');
 				$('#field_product').removeClass('d-none');
 				$('#product_code').val('').focus();
@@ -381,7 +381,6 @@
 					$('#product_id').val(response.item.product_id).trigger('change');
 					$('#product_qty').val('1');
 					$('#product_price').val(formatMoney(10000));
-
 					$('#save-product').trigger('click');
 				},
 				error: function() {
