@@ -58,8 +58,9 @@
                     <th>Nama Product</th>
                     <th>Category</th>
                     <th>Brand</th>
-                    <th>Unit</th>
-                    <th>Type</th>
+                    <!-- <th>Unit</th>
+                    <th>Type</th> -->
+                    <th>Barcode</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
                     <th>Aksi</th>
@@ -135,6 +136,14 @@
                         </table>
                     </div>
                     <div class="col-md-6">
+                        <div class="card mt-3">
+                            <div class="card-header bg-light py-2">
+                                <strong><i class="fas fa-barcode mr-1"></i> Barcode</strong>
+                            </div>
+                            <div class="card-body py-2 text-center">
+                                <svg id="detail-barcode"></svg>
+                            </div>
+                        </div>
                         <div class="card">
                             <div class="card-header bg-light py-2">
                                 <strong><i class="fas fa-align-left mr-1"></i> Deskripsi</strong>
@@ -203,8 +212,14 @@ window.addEventListener('load', function () {
             { data: 'product_name' },
             { data: 'category_name' },
             { data: 'brand_name' },
-            { data: 'unit_name' },
-            { data: 'product_type_name' },
+            {
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    return `<svg class="row-barcode" data-code="${row.product_code}" id="barcode-${row.product_id}"></svg>`;
+                }
+            },
             {
                 data: 'status',
                 render: function(data, type, row) {
@@ -236,7 +251,24 @@ window.addEventListener('load', function () {
                         </div>`;
                 }
             }
-        ]
+        ],
+            drawCallback: function() {
+            // dipanggil setiap kali tabel selesai render baris
+            $('.row-barcode').each(function() {
+                var code = $(this).data('code');
+                try {
+                    JsBarcode(this, code, {
+                        format: "CODE128",
+                        width: 1,
+                        height: 30,
+                        displayValue: false,   // di tabel biasanya cukup gambar saja, tanpa teks (biar tidak makan tempat)
+                        margin: 0
+                    });
+                } catch (e) {
+                    console.error('Gagal generate barcode untuk', code);
+                }
+            });
+        }
     });
 
     $('#btn_filter').on('click', function(){
@@ -312,6 +344,19 @@ function detailData(id) {
 
             $('#detail-create-by').text(data.created_by_username ? data.created_by_username : '-');
             $('#detail-deskripsi').text(data.description);
+            try {
+                JsBarcode("#detail-barcode", data.product_code, {
+                    format: "CODE128",
+                    width: 2,
+                    height: 50,
+                    displayValue: true,
+                    fontSize: 14,
+                    margin: 10
+                });
+            } catch (e) {
+                console.error('Gagal generate barcode:', e);
+                $('#detail-barcode').closest('.card').hide();
+            }
 
             // ===== TAMBAHAN: render galeri gambar =====
             const $wrapper = $('#detail-images-wrapper');

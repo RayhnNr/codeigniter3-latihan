@@ -64,6 +64,8 @@ class Product extends MY_Controller{
         echo json_encode($output);
     }
 
+    
+
     public function get_detail($id){
         $product_data = $this->Product_model->get_product_detail($id);
 

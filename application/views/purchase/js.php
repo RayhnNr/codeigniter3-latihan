@@ -234,7 +234,6 @@
 				'qty' => (int) $item->qty,
 				'price' => (float) $item->price
 			];
-
 		}, $items ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?> :
 			(JSON.parse(sessionStorage.getItem(<?= json_encode($purchase_draft_storage_key ?? '') ?>)) || []);
 
@@ -248,7 +247,6 @@
 			info: false,
 			ordering: false,
 			columns: [
-			
 				{
 					data: null,
 					render: function (data, type, row, meta) {
@@ -268,11 +266,11 @@
 					data: null,
 					render: function () {
 						return `
-						<div class="d-flex flex-wrap mb-n2">
-                            <button type="button" class="btn btn-sm btn-warning mb-2 mr-2 edit-product"><i class="fas fa-edit"></i> Edit</button>
-							<button type="button" class="btn btn-sm btn-danger mb-2 mr-2 delete-product"><i class="fas fa-trash"></i> Hapus</button>
-						</div>
-                        `;
+							<div class="d-flex flex-wrap mb-n2">
+								<button type="button" class="btn btn-sm btn-warning mb-2 mr-2 edit-product"><i class="fas fa-edit"></i> Edit</button>
+								<button type="button" class="btn btn-sm btn-danger mb-2 mr-2 delete-product"><i class="fas fa-trash"></i> Hapus</button>
+							</div>
+						`;
 					}
 				}
 			]
@@ -297,7 +295,6 @@
 			if (isEdit) {
 				return;
 			}
-
 			if (productRows.length) {
 				sessionStorage.setItem(storageKey, JSON.stringify(productRows));
 			} else {
@@ -306,7 +303,7 @@
 		}
 
 		function clearProductErrors() {
-			$('#product-error, #error_product_id, #error_product_qty, #error_product_price').text('');
+			$('#product-error, #error_product_id, #error_product_qty, #error_product_price, #error_product_code').text('');
 		}
 
 		function setProductError(field, message) {
@@ -320,32 +317,108 @@
 			saveDraft();
 		}
 
-		updateTotals();
-		$('#add-product').on('click', function () {
+		function resetProductForm() {
 			$('#product_index').val('');
+			$('#product_method').val('select');
+			$('#product_code').val('');
 			$('#product_id').val('').trigger('change');
-            $('#product_qty, #product_price').val('');
+			$('#product_qty, #product_price').val('');
+			$('#field_product_code').addClass('d-none');
+			$('#field_product').removeClass('d-none');
 			clearProductErrors();
-			// $('#productModalLabel').text('Tambah Produk');
+		}
+
+		updateTotals();
+
+		$('#add-product').on('click', function () {
+			resetProductForm();
 		});
-        
+
+		$('#product_method').on('change', function () {
+			var method = $(this).val();
+			clearProductErrors();
+
+			if (method === 'barcode') {
+				$('#field_product_code').removeClass('d-none');
+				$('#field_product').removeClass('d-none');
+				$('#product_code').val('').focus();
+				$('#product_id').val('').trigger('change');
+				$('#product_qty, #product_price').val('');
+			} else {
+				$('#field_product_code').addClass('d-none');
+				$('#field_product').removeClass('d-none');
+				$('#product_code').val('');
+				$('#product_id').val('').trigger('change');
+				$('#product_qty, #product_price').val('');
+			}
+		});
+
+		$('#product_code').on('keydown', function(event) {
+			if (event.key !== 'Enter') {
+				return;
+			}
+
+			event.preventDefault();
+
+			var code = $(this).val().trim();
+
+			if (!code) {
+				return setProductError('product_code', 'Kode produk tidak boleh kosong.');
+			}
+
+			clearProductErrors();
+
+			$.ajax({
+				url: '<?= base_url('purchase/get_product_code') ?>',
+				type: 'POST',
+				data: { code: code },
+				dataType: 'json',
+				success: function(response) {
+					if (response.status !== 'success') {
+						return setProductError('product_code', response.message || 'Produk tidak ditemukan.');
+					}
+
+					$('#product_id').val(response.item.product_id).trigger('change');
+					$('#product_qty').val('1');
+					$('#product_price').val(formatMoney(10000));
+
+					$('#save-product').trigger('click');
+				},
+				error: function() {
+					setProductError('product_code', 'Terjadi kesalahan saat mencari produk.');
+				}
+			});
+		});
+		
+
+		$('#product_qty').on('keydown', function (event) {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				$('#save-product').trigger('click');
+			}
+		});
+
 		$('#save-product').on('click', function () {
-			var productId   = $('#product_id').val();
-			var index       = $('#product_index').val();
-			var qty         = parseMoney($('#product_qty').val());
-			var price       = parseMoney($('#product_price').val());
+			var productId = $('#product_id').val();
+			var index = $('#product_index').val();
+			var qty = parseMoney($('#product_qty').val());
+			var price = parseMoney($('#product_price').val());
 			var productName = $('#product_id option:selected').text();
 
 			clearProductErrors();
+
 			if (!productId) {
 				return setProductError('product_id', 'Produk tidak boleh kosong.');
 			}
+
 			if (!Number.isInteger(qty) || qty < 1) {
 				return setProductError('product_qty', 'Kuantitas harus berupa angka bulat lebih besar dari 0.');
 			}
+
 			if (!Number.isFinite(price) || price < 0) {
 				return setProductError('product_price', 'Harga harus berupa angka yang valid dan tidak negatif.');
 			}
+
 			if (productRows.some(function (item, rowIndex) {
 				return String(item.product_id) === String(productId) && String(rowIndex) !== String(index);
 			})) {
@@ -358,6 +431,7 @@
 				qty: qty,
 				price: price
 			};
+
 			if (isEdit) {
 				var oldRow = index === '' ? null : productRows[Number(index)];
 				var url = index === ''
@@ -370,6 +444,7 @@
 					}
 
 					row = response.item;
+
 					if (index === '') {
 						productRows.push(row);
 					} else {
@@ -390,18 +465,22 @@
 				$('#productModal').modal('hide');
 			}
 		});
+
 		$('#product_table tbody').on('click', '.edit-product', function () {
 			var index = table.row($(this).closest('tr')).index();
 			var row = productRows[index];
 
 			$('#product_index').val(index);
+			$('#product_method').val('select');
+			$('#field_product_code').addClass('d-none');
+			$('#field_product').removeClass('d-none');
 			$('#product_id').val(row.product_id).trigger('change');
 			$('#product_qty').val(formatMoney(row.qty));
 			$('#product_price').val(formatMoney(row.price));
 			clearProductErrors();
-			// $('#productModalLabel').text('Edit Produk');
 			$('#productModal').modal('show');
 		});
+
 		$('#product_table tbody').on('click', '.delete-product', function () {
 			var index = table.row($(this).closest('tr')).index();
 			var row = productRows[index];
@@ -421,15 +500,18 @@
 				redraw();
 			}, 'json');
 		});
+
 		$('.money-input').on('input', function () {
 			var value = parseMoney($(this).val());
 			$(this).val(formatMoney(value));
 			updateTotals();
 		});
+
 		$('.qty-input').on('input', function () {
 			var value = parseMoney($(this).val());
 			$(this).val(value ? formatMoney(value) : '');
 		});
+
 		$('#purchase-form').on('submit', function (event) {
 			event.preventDefault();
 
@@ -438,6 +520,7 @@
 			}
 
 			var formData = new FormData(this);
+
 			productRows.forEach(function (row) {
 				formData.append('product_id[]', row.product_id);
 				formData.append('qty[]', row.qty);
@@ -455,6 +538,7 @@
 				if (!result.isConfirmed) {
 					return;
 				}
+
 				$.ajax({
 					url: $('#purchase-form').attr('action'),
 					type: 'POST',
@@ -471,7 +555,7 @@
 						} else if (response.errors) {
 							$.each(response.errors, function (field, message) {
 								$('#error_' + field).text(message);
-							}); 
+							});
 						} else {
 							Swal.fire('Gagal', response.message || 'Data tidak dapat disimpan.', 'error');
 						}

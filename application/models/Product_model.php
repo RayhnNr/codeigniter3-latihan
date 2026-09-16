@@ -348,4 +348,12 @@ class Product_model extends CI_Model
             'images' => $images
         ];
     }
+
+    public function get_by_code($code)
+    {
+        return $this->db
+            ->where('product_code', $code)
+            ->get('products')
+            ->row();
+    }
 }

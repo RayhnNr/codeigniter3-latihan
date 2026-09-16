@@ -124,7 +124,22 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="product_index">
+
                 <div class="form-group">
+                    <label for="product_method">Metode Input</label>
+                    <select class="form-control select2" id="product_method">
+                        <option value="select">Pilih Produk</option>
+                        <option value="barcode">Scan Barcode</option>
+                    </select>
+                </div>
+
+                <div class="form-group d-none" id="field_product_code">
+                    <label for="product_code">Barcode / Kode Produk</label>
+                    <input type="text" class="form-control" id="product_code" autocomplete="off">
+                    <small class="text-danger d-block" id="error_product_code"></small>
+                </div>
+
+                <div class="form-group" id="field_product">
                     <label for="product_id">Nama Produk</label>
                     <select class="form-control select2" id="product_id">
                         <option value="">-- Pilih Produk --</option>
@@ -134,6 +149,7 @@
                     </select>
                     <small class="text-danger d-block" id="error_product_id"></small>
                 </div>
+
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label for="product_qty">Qty</label>
@@ -146,6 +162,7 @@
                         <small class="text-danger d-block" id="error_product_price"></small>
                     </div>
                 </div>
+
                 <div class="text-danger small" id="product-error"></div>
             </div>
             <div class="modal-footer">

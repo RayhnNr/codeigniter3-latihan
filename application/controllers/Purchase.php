@@ -7,6 +7,7 @@ class Purchase extends MY_Controller {
         parent::__construct();
         // $this->only_admin();
         $this->load->model('Purchase_model');
+        $this->load->model('Product_model');
         $this->load->library('form_validation');
     }
 
@@ -337,6 +338,28 @@ class Purchase extends MY_Controller {
             $this->session->set_flashdata('error', 'Gagal menghapus data purchase.');
             echo json_encode(['status' => 'failed', 'message' => 'Gagal menghapus data purchase.']);
         }
+    }
+
+    public function get_product_code()
+    {
+        $code = $this->input->post('code');
+        $product = $this->Product_model->get_by_code($code);
+
+        if (!$product) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Produk tidak ditemukan.'
+            ]);
+            return;
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'item' => [
+                'product_id' => $product->product_id,
+                'product_name' => $product->product_name
+            ]
+        ]);
     }
         
 }
