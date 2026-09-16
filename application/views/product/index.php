@@ -136,22 +136,35 @@
                         </table>
                     </div>
                     <div class="col-md-6">
-                        <div class="card mt-3">
+                        <div class="card shadow-sm mb-3">
                             <div class="card-header bg-light py-2">
-                                <strong><i class="fas fa-qrcode mr-1"></i> QR Code</strong>
+                                <strong>
+                                    <i class="fas fa-qrcode text-primary mr-1"></i>
+                                    QR Code
+                                </strong>
                             </div>
-                            <div class="card-body py-2 text-center">
-                                <div id="detail-qrcode"></div>
+
+                            <div class="card-body text-center py-3">
+                                <div id="detail-qrcode" class="d-flex justify-content-center"></div>
+                                <small class="text-muted d-block mt-2">
+                                    Scan QR Code untuk melihat detail produk
+                                </small>
                             </div>
                         </div>
-                        <div class="card">
+
+                        <div class="card shadow-sm">
                             <div class="card-header bg-light py-2">
-                                <strong><i class="fas fa-align-left mr-1"></i> Deskripsi</strong>
+                                <strong>
+                                    <i class="fas fa-align-left text-primary mr-1"></i>
+                                    Deskripsi
+                                </strong>
                             </div>
-                            <div class="card-body py-2">
-                                <p id="detail-deskripsi" class="text-justify mb-0"></p>
+
+                            <div class="card-body">
+                                <div id="detail-deskripsi" class="text-muted" style="line-height: 1.7;"></div>
                             </div>
                         </div>
+
                     </div>
                 </div>
                 

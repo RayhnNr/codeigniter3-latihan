@@ -1,14 +1,24 @@
 <form id="form_product" enctype="multipart/form-data">
-    <div class="card">
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-box text-primary mr-2"></i>
+                Informasi Produk
+            </h5>
+        </div>
+
         <div class="card-body">
-            
+
             <div class="form-group">
                 <label>Product Code</label>
                 <input type="text" class="form-control" value="<?= $product_code_preview ?>" disabled>
                 <small class="text-muted">Product Code otomatis</small>
             </div>
+
             <div class="row">
                 <div class="col-md-6">
+
                     <div class="form-group">
                         <label>Nama Produk</label>
                         <input type="text" name="product_name" class="form-control">
@@ -20,7 +30,9 @@
                         <select name="category_id" class="form-control form-select2">
                             <option value="">-- Pilih Category --</option>
                             <?php foreach ($categories as $c): ?>
-                                <option value="<?= $c->category_id ?>"><?= $c->category_name ?></option>
+                                <option value="<?= $c->category_id ?>">
+                                    <?= $c->category_name ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small class="text-danger" id="error_category_id"></small>
@@ -31,27 +43,43 @@
                         <select name="brand_id" class="form-control form-select2">
                             <option value="">-- Pilih Brand --</option>
                             <?php foreach ($brands as $b): ?>
-                                <option value="<?= $b->brand_id ?>"><?= $b->brand_name ?></option>
+                                <option value="<?= $b->brand_id ?>">
+                                    <?= $b->brand_name ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small class="text-danger" id="error_brand_id"></small>
                     </div>
-                    <div class="form-group">
-                        <label for="status_toggle">Status</label><br>
+
+                    <div class="form-group mb-md-0">
+                        <label>Status</label><br>
+
                         <input type="hidden" name="status" id="status_hidden" value="<?= $active_status_id ?>">
-                        <input type="checkbox" id="status_toggle" data-toggle="toggle" 
-                            data-on="Aktif" data-off="Nonaktif" 
-                            data-onstyle="success" data-offstyle="secondary" checked>
+
+                        <input type="checkbox"
+                            id="status_toggle"
+                            data-toggle="toggle"
+                            data-on="Aktif"
+                            data-off="Nonaktif"
+                            data-onstyle="success"
+                            data-offstyle="secondary"
+                            checked>
+
                         <small class="text-danger" id="error_status"></small>
                     </div>
+
                 </div>
+
                 <div class="col-md-6">
+
                     <div class="form-group">
                         <label>Unit</label>
                         <select name="unit_id" class="form-control form-select2">
                             <option value="">-- Pilih Unit --</option>
                             <?php foreach ($units as $u): ?>
-                                <option value="<?= $u->unit_id ?>"><?= $u->unit_name ?></option>
+                                <option value="<?= $u->unit_id ?>">
+                                    <?= $u->unit_name ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small class="text-danger" id="error_unit_id"></small>
@@ -62,36 +90,64 @@
                         <select name="product_type" class="form-control form-select2">
                             <option value="">-- Pilih Product Type --</option>
                             <?php foreach ($product_type as $pt): ?>
-                                <option value="<?= $pt->product_type_id ?>"><?= $pt->product_type_name ?></option>
+                                <option value="<?= $pt->product_type_id ?>">
+                                    <?= $pt->product_type_name ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small class="text-danger" id="error_product_type"></small>
                     </div>
+
                     <div class="form-group">
                         <label>Deskripsi</label>
-                        <textarea name="description" class="form-control" rows="3"></textarea>
+                        <textarea name="description"
+                            class="form-control"
+                            rows="5"></textarea>
                         <small class="text-danger" id="error_description"></small>
                     </div>
+
                 </div>
-            </div>   
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="mb-1 font-weight-bold">
+                        <i class="fas fa-images text-primary mr-2"></i>
+                        Foto Produk
+                    </h6>
+                    <small class="text-muted">
+                        Tambahkan foto produk yang ingin ditampilkan.
+                    </small>
+                </div>
+
+                <button type="button" id="btnTambahRow" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus mr-1"></i>
+                    Tambah Foto
+                </button>
+            </div>
+
+            <div id="wrapperDetail">
+                <!-- Row akan di-generate oleh JS -->
+            </div>
+
         </div>
-    </div>
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-images text-primary"></i> Daftar Foto Produk</span>
-            <button type="button" id="btnTambahRow" class="btn btn-primary btn-sm ml-auto">
-                <i class="fas fa-plus"></i> Tambah Foto
+
+        <div class="card-footer d-flex justify-content-end">
+            <a href="<?= base_url('product') ?>" class="btn btn-secondary mr-2">
+                Batal
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save mr-1"></i>
+                Simpan
             </button>
         </div>
-        <div class="card-body" id="wrapperDetail">
-            <!-- Row akan di-generate oleh JS, mulai dengan 1 baris -->
-        </div>
-        <div class="card-footer text-right">
-            <a href="<?= base_url('product') ?>" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary">Simpan</button>
-        </div>
+
     </div>
 </form>
+
 
 <!-- Template row -->
 <template id="rowTemplate">
@@ -106,6 +162,7 @@
                 <input type="file" name="product_images[]" class="custom-file-input image-input" accept=".jpg,.jpeg,.png">
                 <label class="custom-file-label file-label">Pilih file...</label>
             </div>
+            <small class="text-muted">Format file: JPG, JPEG, PNG, dan GIF. Maksimal ukuran 2 MB.</small>
             <small class="text-danger error-image d-block"></small>
         </div>
 
