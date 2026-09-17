@@ -17,8 +17,20 @@ window.addEventListener('load', function () {
 			{ data: 'perizinan_no' },
 			{ data: 'jenis_perizinan_name', defaultContent: '-' },
 			{ data: 'tanggal_pengajuan', defaultContent: '-' },
-			{ data: 'tanggal_mulai', defaultContent: '-' },
-			{ data: 'tanggal_selesai', defaultContent: '-' },
+			{
+				data: null,
+				orderable: false, 
+				searchable: false,
+				render: function (data, type, row){
+					return`
+						${row.tanggal_mulai}
+        				${row.tanggal_selesai ? ' - ' + row.tanggal_selesai : ''}
+					`;
+				}
+
+			},
+			// { data: 'tanggal_mulai', defaultContent: '-' },
+			// { data: 'tanggal_selesai', defaultContent: '-' },
 			{
 				data: 'product_status_name',
 				defaultContent: '-',
@@ -42,10 +54,14 @@ window.addEventListener('load', function () {
 					var status = (row.product_status_name || '').toLowerCase().trim();
 
 					if (status === 'pending') {
-						return '<a href="<?= base_url('perizinan/edit/') ?>' + row.perizinan_id + '" class="btn btn-sm btn-warning" title="Edit">' +
-							'<i class="fas fa-edit"></i></a> ' +
-							'<a href="<?= base_url('perizinan/delete/') ?>' + row.perizinan_id + '" class="btn btn-sm btn-danger btn-delete" title="Hapus">' +
-							'<i class="fas fa-trash"></i></a>';
+						return `
+							<a href="<?= base_url('perizinan/edit/') ?>${row.perizinan_id}" class="btn btn-sm btn-warning" title="Edit">
+								<i class="fas fa-edit"></i>
+							</a>
+							<a href="<?= base_url('perizinan/delete/') ?>${row.perizinan_id}" class="btn btn-sm btn-danger btn-delete" title="Hapus">
+								<i class="fas fa-trash"></i>
+							</a>
+						`;
 					}
 
 					return '-';
@@ -98,7 +114,9 @@ window.addEventListener('load', function () {
 			$.ajax({
 				url: '<?= base_url('perizinan/get_fields') ?>',
 				type: 'POST',
-				data: { jenis_perizinan_id: jenisId },
+				data: { 
+					jenis_perizinan_id: jenisId 
+				},
 				dataType: 'json',
 				success: function (fields) {
 					visibleFields = fields;

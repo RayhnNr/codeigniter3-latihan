@@ -14,8 +14,7 @@
                     <th>Nomor Perizinan</th>
                     <th>Jenis Perizinan</th>
                     <th>Tanggal Pengajuan</th>
-                    <th>Tanggal Mulai</th>
-                    <th>Tanggal Berakhir</th>
+                    <th>Tanggal</th>
                     <th>Status</th>
                     <th>Aksi</th>
                 </tr>

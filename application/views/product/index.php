@@ -256,12 +256,17 @@ window.addEventListener('load', function () {
                     return `
                         <div class="d-flex flex-wrap mb-n2">
                             <a href="<?= base_url('product/edit/') ?>${row.product_id}" class="btn btn-sm btn-warning mr-2 mb-2">
-                                <i class="fas fa-edit"></i> Edit
+                                <i class="fas fa-edit mr-1"></i>Edit
                             </a>
-                            <button type="button" class="btn btn-sm btn-danger btn-delete" onclick="tombolDelete(this)" data-id="${row.product_id}" data-code="${row.product_code}">
-                                <i class="fas fa-trash"></i> Hapus
+
+                            <button type="button" class="btn btn-sm btn-danger btn-delete mr-2 mb-2"
+                                onclick="tombolDelete(this)"
+                                data-id="${row.product_id}"
+                                data-code="${row.product_code}">
+                                <i class="fas fa-trash mr-1"></i>Hapus
                             </button>
-                        </div>`;
+                        </div>
+                    `;
                 }
             }
         ],

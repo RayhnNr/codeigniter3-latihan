@@ -99,7 +99,11 @@
 				// { data: 'purchase_code' },
 				{ data: null,
 					render: function (data, type, row){
-						return `<button type="button" class="btn btn-sm btn-block btn-info" onclick="detailData('${row.purchase_id}')"><i class="fas fa-eye"></i> ${row.purchase_code}</button>`;
+						return `
+							<button type="button" class="btn btn-sm btn-block btn-info" onclick="detailData('${row.purchase_id}')">
+								<i class="fas fa-eye"></i> ${row.purchase_code}
+							</button>
+						`;
 					}
 				},
 				{ data: 'nama_supplier' },
@@ -125,10 +129,15 @@
 					width: "150px",
 					render: function (data, type, row) {
 						return `
-						<div class="d-flex flex-wrap mb-n2">
-							<a href="<?= base_url('purchase/edit/') ?>${row.purchase_id}" class="btn btn-sm btn-warning mb-2 mr-2"><i class="fas fa-edit"></i> Edit</a>
-							<button type="button" class="btn btn-sm btn-danger btn-delete mb-2 mr-2" data-id="${row.purchase_id}" data-code="${row.purchase_code}"><i class="fas fa-trash"></i> Hapus</button>
-                        </div>   `;
+							<div class="d-flex flex-wrap mb-n2">
+								<a href="<?= base_url('purchase/edit/') ?>${row.purchase_id}" class="btn btn-sm btn-warning mb-2 mr-2">
+									<i class="fas fa-edit"></i> Edit
+								</a>
+								<button type="button" class="btn btn-sm btn-danger btn-delete mb-2 mr-2" data-id="${row.purchase_id}" data-code="${row.purchase_code}">
+									<i class="fas fa-trash"></i> Hapus
+								</button>
+							</div>
+						`;
 					}
 				}
 			]
@@ -267,8 +276,12 @@
 					render: function () {
 						return `
 							<div class="d-flex flex-wrap mb-n2">
-								<button type="button" class="btn btn-sm btn-warning mb-2 mr-2 edit-product"><i class="fas fa-edit"></i> Edit</button>
-								<button type="button" class="btn btn-sm btn-danger mb-2 mr-2 delete-product"><i class="fas fa-trash"></i> Hapus</button>
+								<button type="button" class="btn btn-sm btn-warning mb-2 mr-2 edit-product">
+									<i class="fas fa-edit"></i> Edit
+								</button>
+								<button type="button" class="btn btn-sm btn-danger mb-2 mr-2 delete-product">
+									<i class="fas fa-trash"></i> Hapus
+								</button>
 							</div>
 						`;
 					}
