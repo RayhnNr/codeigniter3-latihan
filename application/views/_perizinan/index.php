@@ -1,16 +1,19 @@
 <div class="card">
     <div class="card-header">
-        <a href="<?= base_url('perizinan/create') ?>" class="btn btn-primary btn-sm">
-            <i class="fas fa-plus"></i> Tambah Pengajuan
-        </a>
+        <div class="card-tools">
+            <a href="<?= base_url('perizinan/create') ?>" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tambah Perizinan
+            </a>
+        </div>
     </div>
     <div class="card-body">
         <table id="table-perizinan" class="table table-bordered table-striped" style="width:100%">
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>No. Pengajuan</th>
-                    <th>Jenis</th>
+                    <th>Nomor Perizinan</th>
+                    <th>Jenis Perizinan</th>
+                    <th>Tanggal Pengajuan</th>
                     <th>Tanggal</th>
                     <th>Status</th>
                     <th>Aksi</th>
@@ -20,3 +23,4 @@
         </table>
     </div>
 </div>
+

@@ -90,7 +90,7 @@ class Perizinan extends MY_Controller {
         $data['active_status_id'] = $this->Jenis_perizinan_model->get_status_id_by_name('Aktif');
         $data['inactive_status_id'] = $this->Jenis_perizinan_model->get_status_id_by_name('Nonaktif');
         $this->load->view('templates/header', $data);
-        $this->load->view('perizinan/edit', $data);
+        $this->load->view('perizinan/form', $data);
         $this->load->view('templates/footer');
         $this->load->view('perizinan/js', $data);
     }
@@ -248,8 +248,10 @@ class Perizinan extends MY_Controller {
         // Pengecekan tanggal mulai harus <= tanggal selesai
         if (!$is_single_day && $tanggal_mulai > $tanggal_selesai) {
             echo json_encode([
-                'status'  => 'error',
-                'message' => 'Tanggal mulai tidak boleh lebih besar dari tanggal selesai.'
+                'status' => 'error',
+                'errors' => [
+                    'tanggal_selesai' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.'
+                ]
             ]);
             return;
         }
@@ -362,6 +364,32 @@ class Perizinan extends MY_Controller {
         }
 
         echo json_encode($data);
+    }
+
+    public function ajax_get_form()
+    {
+        $jenis_perizinan_id = $this->input->post('jenis_perizinan_id');
+        $jenis = $this->Jenis_perizinan_model->get($jenis_perizinan_id);
+        $perizinan_id = $this->input->post('perizinan_id');
+
+        $data['jenis_perizinan_id'] = $jenis_perizinan_id;
+        $data['perizinan'] = !empty($perizinan_id)
+            ? $this->Perizinan_model->get($perizinan_id, TRUE)
+            : null;
+
+        $map = [
+            'CUTI'                   => 'perizinan/form_cuti',
+            'IZIN_LIBUR'             => 'perizinan/form_izin_libur',
+            'GET_PASS'               => 'perizinan/form_waktu',
+            'PULANG_AWAL'            => 'perizinan/form_waktu',
+            'TERLAMBAT_MASUK_KERJA'  => 'perizinan/form_waktu'
+        ];
+
+        $view = isset($map[$jenis->jenis_perizinan_code])
+            ? $map[$jenis->jenis_perizinan_code]
+            : 'perizinan/form_cuti';
+
+        $this->load->view($view, $data);
     }
 
     public function delete($id){

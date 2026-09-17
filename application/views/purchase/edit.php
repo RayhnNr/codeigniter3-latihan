@@ -40,13 +40,28 @@
                         </div>
                         <small class="text-danger d-block" id="error_due_date"></small>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="payment_type">Pembayaran</label>
                         <select class="form-control select2" id="payment_type" name="payment_type" required>
                             <option value="">-- Pilih Pembayaran --</option>
                             <option value="cash" <?= ($purchase['header']->payment_type == 'cash') ? 'selected' : '' ?>>Cash</option>
                             <option value="credit" <?= ($purchase['header']->payment_type == 'credit') ? 'selected' : '' ?>>Credit</option>
                         </select>
+                        <small class="text-danger d-block" id="error_payment_type"></small>
+                    </div> -->
+                    <div class="form-group">
+                        <label>Pembayaran</label><br>
+                        <div class="icheck-primary d-inline mr-3">
+                            <input type="radio" id="payment_cash" name="payment_type" value="cash"
+                                <?= ($purchase['header']->payment_type == 'cash') ? 'checked' : '' ?>>
+                            <label for="payment_cash">Cash</label>
+                        </div>
+
+                        <div class="icheck-primary d-inline">
+                            <input type="radio"id="payment_credit" name="payment_type" value="credit"
+                                <?= ($purchase['header']->payment_type == 'credit') ? 'checked' : '' ?>>
+                            <label for="payment_credit">Credit</label>
+                        </div>
                         <small class="text-danger d-block" id="error_payment_type"></small>
                     </div>
                 </div>
