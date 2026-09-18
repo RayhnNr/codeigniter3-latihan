@@ -5,7 +5,8 @@ function renderStatusBadge(statusName) {
     var statusMap = {
         'Pending': 'badge-warning',
         'Approved': 'badge-success',
-        'Rejected': 'badge-danger'
+        'Rejected': 'badge-danger',
+        'Expired': 'badge-secondary'
     };
 
     return `<span class="badge ${statusMap[statusName] || 'badge-secondary'}">${statusName || 'Unknown'}</span>`;

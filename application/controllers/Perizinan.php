@@ -83,6 +83,13 @@ class Perizinan extends MY_Controller {
             redirect('perizinan');
             return;
         }
+
+        $pending_status_id = $this->Perizinan_model->get_status_id_by_name('Pending');
+        if ((int) $data['perizinan']->status !== (int) $pending_status_id) {
+            $this->session->set_flashdata('error', 'Perizinan yang sudah tidak berstatus Pending tidak dapat diedit.');
+            redirect('perizinan');
+            return;
+        }
         
         $data['jenis_perizinan'] = $this->Perizinan_model->get_jenis_perizinan();
         $data['status'] = $this->Perizinan_model->get_status();
@@ -137,6 +144,15 @@ class Perizinan extends MY_Controller {
                 echo json_encode([
                     'status'  => 'error',
                     'message' => 'Data perizinan tidak ditemukan.'
+                ]);
+                return;
+            }
+
+            $pending_status_id = $this->Perizinan_model->get_status_id_by_name('Pending');
+            if ((int) $existing->status !== (int) $pending_status_id) {
+                echo json_encode([
+                    'status'  => 'error',
+                    'message' => 'Perizinan yang sudah tidak berstatus Pending tidak dapat diedit.'
                 ]);
                 return;
             }

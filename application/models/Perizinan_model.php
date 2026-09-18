@@ -52,4 +52,27 @@ class Perizinan_model extends MY_Model{
     public function get_jenis_perizinan(){
         return $this->db->get_where('jenis_perizinan', ['status' => 1])->result();
     }
+
+    public function expire_pending($today = null){
+        $today = $today ?: date('Y-m-d');
+        $pending_status_id = $this->get_status_id_by_name('Pending');
+        $expired_status_id = $this->get_status_id_by_name('Expired');
+
+        if (!$pending_status_id || !$expired_status_id) {
+            return 0;
+        }
+
+        $this->db->where('status', $pending_status_id);
+        $this->db->where(
+            'COALESCE(tanggal_selesai, tanggal_mulai) < ' . $this->db->escape($today),
+            null,
+            FALSE
+        );
+        $this->db->update($this->_table_name, [
+            'status'     => $expired_status_id,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->db->affected_rows();
+    }
 }
