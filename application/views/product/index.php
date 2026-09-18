@@ -60,7 +60,7 @@
                     <th>Brand</th>
                     <!-- <th>Unit</th>
                     <th>Type</th> -->
-                    <th>Barcode</th>
+                    <th>QR Code</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
                     <th>Aksi</th>

@@ -1,7 +1,15 @@
 <script>
 
 var table;
+function renderStatusBadge(statusName) {
+    var statusMap = {
+        'Pending': 'badge-warning',
+        'Approved': 'badge-success',
+        'Rejected': 'badge-danger'
+    };
 
+    return `<span class="badge ${statusMap[statusName] || 'badge-secondary'}">${statusName || 'Unknown'}</span>`;
+}
 function initTablePerizinan() {
     table = $('#table-perizinan').DataTable({
         processing: true,
@@ -15,7 +23,17 @@ function initTablePerizinan() {
         },
         columns: [
             { data: 'no', orderable: false, searchable: false },
-            { data: 'perizinan_no' },
+            // { data: 'perizinan_no' },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    return `
+                        <button class="btn btn-sm btn-block btn-primary" onclick="detailPerizinan(${row.perizinan_id})">
+                            <i class="fas fa-eye mr-2"></i>${row.perizinan_no}
+                        </button>
+                    `;
+                }
+            },
             { data: 'jenis_perizinan_name' },
             {
                 data: null,
@@ -28,7 +46,12 @@ function initTablePerizinan() {
                     `;
                 }
             },
-            { data: 'product_status_name' },
+            {
+                data: 'product_status_name',
+                render: function(data, type, row) {
+                    return renderStatusBadge(data);
+                }
+            },
             {
                 data: null,
                 orderable: false,
@@ -77,6 +100,44 @@ function hapusPerizinan(id) {
     }).then(function (result) {
         if (result.isConfirmed) {
             window.location.href = '<?= base_url('perizinan/delete/') ?>' + id;
+        }
+    });
+}
+
+function detailPerizinan(id) {
+    $('#detailPerizinan').html(`
+        <div class="text-center py-4">
+            <i class="fas fa-spinner fa-spin mr-1"></i>
+            Memuat detail...
+        </div>
+    `);
+
+    $('#modalDetail').modal('show');
+
+    $.ajax({
+        url: '<?= site_url('perizinan/ajax_get_detail/') ?>' + id,
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (response.status === 'success') {
+                $('#detailPerizinan').html(response.data);
+                $('#detail-status').html(
+                    renderStatusBadge(response.product_status_name)
+                );
+            } else {
+                $('#detailPerizinan').html(`
+                    <div class="alert alert-danger mb-0">
+                        ${response.message}
+                    </div>
+                `);
+            }
+        },
+        error: function() {
+            $('#detailPerizinan').html(`
+                <div class="alert alert-danger mb-0">
+                    Gagal memuat detail perizinan.
+                </div>
+            `);
         }
     });
 }

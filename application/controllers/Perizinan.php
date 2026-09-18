@@ -369,8 +369,17 @@ class Perizinan extends MY_Controller {
     public function ajax_get_form()
     {
         $jenis_perizinan_id = $this->input->post('jenis_perizinan_id');
-        $jenis = $this->Jenis_perizinan_model->get($jenis_perizinan_id);
         $perizinan_id = $this->input->post('perizinan_id');
+
+        if (empty($jenis_perizinan_id)) {
+            show_error('Jenis perizinan wajib dipilih.', 400);
+        }
+
+        $jenis = $this->Jenis_perizinan_model->get($jenis_perizinan_id);
+
+        if (!$jenis) {
+            show_error('Jenis perizinan tidak ditemukan.', 404);
+        }
 
         $data['jenis_perizinan_id'] = $jenis_perizinan_id;
         $data['perizinan'] = !empty($perizinan_id)
@@ -378,18 +387,87 @@ class Perizinan extends MY_Controller {
             : null;
 
         $map = [
-            'CUTI'                   => 'perizinan/form_cuti',
-            'IZIN_LIBUR'             => 'perizinan/form_izin_libur',
-            'GET_PASS'               => 'perizinan/form_waktu',
-            'PULANG_AWAL'            => 'perizinan/form_waktu',
-            'TERLAMBAT_MASUK_KERJA'  => 'perizinan/form_waktu'
+            'CUTI' => 'perizinan/form_cuti',
+            'IZIN_LIBUR' => 'perizinan/form_izin_libur',
+            'GET_PASS' => 'perizinan/form_waktu',
+            'PULANG_AWAL' => 'perizinan/form_waktu',
+            'TERLAMBAT_MASUK_KERJA' => 'perizinan/form_waktu'
         ];
 
-        $view = isset($map[$jenis->jenis_perizinan_code])
-            ? $map[$jenis->jenis_perizinan_code]
-            : 'perizinan/form_cuti';
+        if (!isset($map[$jenis->jenis_perizinan_code])) {
+            show_error('Form jenis perizinan belum tersedia.', 404);
+        }
 
-        $this->load->view($view, $data);
+        $this->load->view($map[$jenis->jenis_perizinan_code], $data);
+    }
+
+    public function ajax_get_detail($id = NULL)
+    {
+        if (empty($id)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'ID perizinan tidak ditemukan.'
+            ]);
+            return;
+        }
+
+        $this->db->select('perizinan.*, jenis_perizinan.jenis_perizinan_name, jenis_perizinan.jenis_perizinan_code, product_status.product_status_name');
+        $this->db->from('perizinan');
+        $this->db->join('jenis_perizinan', 'jenis_perizinan.jenis_perizinan_id = perizinan.jenis_perizinan_id');
+        $this->db->join('product_status', 'product_status.product_status_id = perizinan.status');
+        $this->db->where('perizinan.perizinan_id', $id);
+        $perizinan = $this->db->get()->row();
+
+        if (!$perizinan) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Data perizinan tidak ditemukan.'
+            ]);
+            return;
+        }
+
+        $perizinan->durasi = 0;
+
+        if (!empty($perizinan->tanggal_mulai) && !empty($perizinan->tanggal_selesai)) {
+            $mulai = new DateTime($perizinan->tanggal_mulai);
+            $selesai = new DateTime($perizinan->tanggal_selesai);
+
+            while ($mulai <= $selesai) {
+                if ($mulai->format('w') != 0) {
+                    $perizinan->durasi++;
+                }
+
+                $mulai->modify('+1 day');
+            }
+        }
+
+        $map = [
+            'CUTI' => 'perizinan/ajax_tanggal',
+            'IZIN_LIBUR' => 'perizinan/ajax_tanggal',
+            'GET_PASS' => 'perizinan/ajax_waktu',
+            'PULANG_AWAL' => 'perizinan/ajax_waktu',
+            'TERLAMBAT_MASUK_KERJA' => 'perizinan/ajax_waktu'
+        ];
+
+        if (!isset($map[$perizinan->jenis_perizinan_code])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Detail jenis perizinan belum tersedia.'
+            ]);
+            return;
+        }
+
+        $data['perizinan'] = $perizinan;
+
+        echo json_encode([
+            'status' => 'success',
+            'data' => $this->load->view(
+                $map[$perizinan->jenis_perizinan_code],
+                ['perizinan' => $perizinan],
+                TRUE
+            ),
+            'product_status_name' => $perizinan->product_status_name
+        ]);
     }
 
     public function delete($id){
