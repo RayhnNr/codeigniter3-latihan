@@ -64,7 +64,7 @@
                     <th>Code Purchase</th>
                     <th>Nama Supplier</th>
                     <th>Tanggal</th>
-                    <th>Tanggal Jatuh Tempo</th>
+                    <th>Jatuh Tempo</th>
                     <th>Pembayaran</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>

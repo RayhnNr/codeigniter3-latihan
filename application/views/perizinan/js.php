@@ -12,6 +12,36 @@ function renderStatusBadge(statusName) {
     return `<span class="badge ${statusMap[statusName] || 'badge-secondary'}">${statusName || 'Unknown'}</span>`;
 }
 function initTablePerizinan() {
+    $('.select2').select2({
+        theme: 'bootstrap4',
+        width: '100%'
+    });
+    var selectedStartDate = '';
+    var selectedEndDate = moment().format('YYYY-MM-DD');
+
+    $('#filter_date_range').daterangepicker({
+        autoUpdateInput: true,
+        startDate: moment(),
+        endDate: moment(),
+        locale: {
+            format: 'YYYY-MM-DD',
+            separator: '/',
+            applyLabel: 'Terapkan',
+            cancelLabel: 'Batal',
+            fromLabel: 'Dari',
+            toLabel: 'Sampai',
+            customRangeLabel: 'Custom',
+            daysOfWeek: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+            monthNames: [
+                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ]
+        }
+    }).on('apply.daterangepicker', function (event, picker) {
+        selectedStartDate = picker.startDate.format('YYYY-MM-DD');
+        selectedEndDate = picker.endDate.format('YYYY-MM-DD');
+    });
+
     table = $('#table-perizinan').DataTable({
         processing: true,
         serverSide: false,
@@ -20,7 +50,12 @@ function initTablePerizinan() {
         ajax: {
             url: '<?= base_url('perizinan/get_data') ?>',
             type: 'POST',
-            dataSrc: 'data'
+            dataSrc: 'data',
+            data: function (data){
+                data.jenis_perizinan_id = $('#filter_jenis_perizinan').val();
+                data.tanggal_dari = selectedStartDate;
+				data.tanggal_sampai = selectedEndDate;
+            }
         },
         columns: [
             { data: 'no', orderable: false, searchable: false },
@@ -29,7 +64,7 @@ function initTablePerizinan() {
                 data: null,
                 render: function (data, type, row) {
                     return `
-                        <button class="btn btn-sm btn-block btn-primary" onclick="detailPerizinan(${row.perizinan_id})">
+                        <button class="btn btn-sm btn-block btn-info" onclick="detailPerizinan(${row.perizinan_id})">
                             <i class="fas fa-eye mr-2"></i>${row.perizinan_no}
                         </button>
                     `;
@@ -82,6 +117,9 @@ function initTablePerizinan() {
             }
         ]
     });
+    $('#btn_filter').on('click', function () {
+        table.ajax.reload();
+    });
 }
 
 function editPerizinan(id) {
@@ -114,6 +152,7 @@ function detailPerizinan(id) {
     `);
 
     $('#modalDetail').modal('show');
+
 
     $.ajax({
         url: '<?= site_url('perizinan/ajax_get_detail/') ?>' + id,

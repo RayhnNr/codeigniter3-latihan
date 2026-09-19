@@ -24,6 +24,11 @@ class Perizinan extends MY_Controller {
 
     public function get_data(){
         $user_id = $this->session->userdata('user_id');
+
+        $jenis_perizinan_id = $this->input->post('jenis_perizinan_id');
+        $tanggal_dari = $this->input->post('tanggal_dari');
+        $tanggal_sampai = $this->input->post('tanggal_sampai');
+
         $this->db->select('perizinan.*, jenis_perizinan.jenis_perizinan_name, employees.employee_name, product_status.product_status_name');
         $this->db->from('perizinan');
         $this->db->join('jenis_perizinan', 'jenis_perizinan.jenis_perizinan_id = perizinan.jenis_perizinan_id', 'left');
@@ -31,6 +36,16 @@ class Perizinan extends MY_Controller {
         $this->db->join('product_status', 'product_status.product_status_id = perizinan.status', 'left');
         $this->db->join('users', 'users.employee_id = perizinan.employee_id', 'left');
         $this->db->where('users.user_id', $user_id);
+
+        if (!empty($jenis_perizinan_id)) {
+            $this->db->where('perizinan.jenis_perizinan_id', $jenis_perizinan_id);
+        }
+
+        if (!empty($tanggal_dari) && !empty($tanggal_sampai)) {
+            $this->db->where('perizinan.tanggal_mulai <=', $tanggal_sampai);
+            $this->db->where('perizinan.tanggal_selesai >=', $tanggal_dari);
+        }
+
         $this->db->order_by('perizinan.perizinan_id', 'DESC');
         $rows = $this->db->get()->result();
 

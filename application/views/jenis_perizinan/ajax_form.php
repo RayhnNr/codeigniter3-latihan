@@ -17,7 +17,7 @@
 		<textarea name="description" id="description" class="form-control" maxlength="50" rows="3"><?= $row ? html_escape($row->description) : '' ?></textarea>
 	</div>
 	<div class="form-group">
-		<label>Status</label>
+		<label>Status</label><br>
 		<input type="hidden" name="status" id="jenis_perizinan_status_value" value="<?= $status ?>">
 		<input type="checkbox" id="jenis_perizinan_status" data-active-value="<?= (int) $active_status_id ?>" data-inactive-value="<?= (int) $inactive_status_id ?>" data-toggle="toggle" data-on="Aktif" data-off="Nonaktif" data-onstyle="success" data-offstyle="secondary" data-width="110" <?= $status === (int) $active_status_id ? 'checked' : '' ?>>
 	</div>
