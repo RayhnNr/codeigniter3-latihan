@@ -130,7 +130,7 @@ window.addEventListener('load', function () {
             ordering: true,
             order: [],
             columnDefs: [
-                { orderable: false, targets: [1] }
+                { orderable: false, targets: [0, 1] }
             ],
             language: {
                 search: 'Cari menu:',

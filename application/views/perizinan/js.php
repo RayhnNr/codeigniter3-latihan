@@ -143,6 +143,7 @@ function hapusPerizinan(id) {
     });
 }
 
+// Menampilkan Detail Perizinan
 function detailPerizinan(id) {
     $('#detailPerizinan').html(`
         <div class="text-center py-4">
@@ -226,11 +227,7 @@ function gantiFormPerizinan(jenisId) {
 }
 
 function initFormPerizinan() {
-
-    /*
-     * Hanya initialize component yang ada
-     * di dalam form hasil AJAX.
-     */
+    window.perizinanInitializing = true;
 
     $('#tanggal_mulai_picker, #tanggal_selesai_picker').each(function () {
 
@@ -305,6 +302,8 @@ function initFormPerizinan() {
     $('#tanggal_selesai').attr('min', todayString);
 
     updateDuration();
+
+    window.perizinanInitializing = false;
 }
 
 function parseDate(value) {
@@ -335,6 +334,8 @@ function formatDateToInput(date) {
     return year + '-' + month + '-' + day;
 }
 
+
+// Menghitung Durasi berdasarkan tanggal mulai dan tanggal selesai
 function updateDuration() {
     var startDate = parseDate($('#tanggal_mulai').val());
     var endDate = parseDate($('#tanggal_selesai').val());
@@ -368,6 +369,7 @@ function updateDuration() {
     $('#duration_info').val(duration);
 }
 
+// Validasi tanggal mulai
 function validateTanggalMulai() {
     var input = $('#tanggal_mulai');
 
@@ -377,7 +379,6 @@ function validateTanggalMulai() {
 
     var value = input.val();
     var startDate = parseDate(value);
-
     var today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -395,9 +396,6 @@ function validateTanggalMulai() {
         return false;
     }
 
-    /*
-     * Tanggal mulai sebelum hari ini
-     */
     if (startDate < today) {
         var todayString = formatDateToInput(today);
 
@@ -410,9 +408,6 @@ function validateTanggalMulai() {
             );
         }, 0);
 
-        /*
-         * Update minimum tanggal selesai
-         */
         if ($('#tanggal_selesai').length) {
             $('#tanggal_selesai').attr('min', todayString);
         }
@@ -425,9 +420,6 @@ function validateTanggalMulai() {
     input.removeClass('is-invalid');
     $('#error_tanggal_mulai').text('');
 
-    /*
-     * Update minimum tanggal selesai
-     */
     if ($('#tanggal_selesai').length) {
 
         $('#tanggal_selesai').attr('min', value);
@@ -451,6 +443,7 @@ function validateTanggalMulai() {
     return true;
 }
 
+// Validasi Tanggal Selesai
 function validateTanggalSelesai() {
     var input = $('#tanggal_selesai');
 
@@ -459,9 +452,7 @@ function validateTanggalSelesai() {
     }
 
     var value = input.val();
-
     var endDate = parseDate(value);
-
     var startDate = parseDate(
         $('#tanggal_mulai').val()
     );
@@ -484,9 +475,6 @@ function validateTanggalSelesai() {
         return false;
     }
 
-    /*
-     * Tanggal selesai sebelum hari ini
-     */
     if (endDate < today) {
         var todayString = formatDateToInput(today);
 
@@ -504,9 +492,6 @@ function validateTanggalSelesai() {
         return false;
     }
 
-    /*
-     * Tanggal selesai sebelum tanggal mulai
-     */
     if (startDate && endDate < startDate) {
         var startString = formatDateToInput(startDate);
 
@@ -533,6 +518,7 @@ function validateTanggalSelesai() {
     return true;
 }
 
+// Form Submit
 function simpanPerizinan() {
 
     var form = document.getElementById('form-perizinan');
@@ -541,26 +527,14 @@ function simpanPerizinan() {
         return;
     }
 
-    /*
-     * Bersihkan error lama.
-     */
-
     $('#form-perizinan small.text-danger').text('');
     $('#form-perizinan .is-invalid').removeClass('is-invalid');
 
     var isValid = true;
-
     var jenisId = $('#jenis_perizinan_id').val();
-
     var tanggalMulai = $('#tanggal_mulai').val();
-
     var tanggalSelesai = $('#tanggal_selesai').val();
-
     var alasan = $('#alasan').val();
-
-    /*
-     * JENIS PERIZINAN
-     */
 
     if (!jenisId) {
 
@@ -573,10 +547,6 @@ function simpanPerizinan() {
         isValid = false;
     }
 
-    /*
-     * TANGGAL MULAI
-     */
-
     if ($('#tanggal_mulai').length && !tanggalMulai) {
 
         $('#error_tanggal_mulai').text(
@@ -587,12 +557,6 @@ function simpanPerizinan() {
 
         isValid = false;
     }
-
-    /*
-     * TANGGAL SELESAI
-     *
-     * Hanya ada pada template form_tanggal.
-     */
 
     if ($('#tanggal_selesai').length && !tanggalSelesai) {
 
@@ -605,10 +569,6 @@ function simpanPerizinan() {
         isValid = false;
     }
 
-    /*
-     * VALIDASI TANGGAL MULAI
-     */
-
     if ($('#tanggal_mulai').length && tanggalMulai) {
 
         if (!validateTanggalMulai()) {
@@ -616,20 +576,12 @@ function simpanPerizinan() {
         }
     }
 
-    /*
-     * VALIDASI TANGGAL SELESAI
-     */
-
     if ($('#tanggal_selesai').length && tanggalSelesai) {
 
         if (!validateTanggalSelesai()) {
             isValid = false;
         }
     }
-
-    /*
-     * ALASAN
-     */
 
     if ($('#alasan').length && !alasan.trim()) {
 
@@ -642,17 +594,8 @@ function simpanPerizinan() {
         isValid = false;
     }
 
-    /*
-     * JAM
-     */
-
     var jamMulai = $('#jam_mulai').val();
-
     var jamSelesai = $('#jam_selesai').val();
-
-    /*
-     * JAM MULAI
-     */
 
     if ($('#jam_mulai').length && !jamMulai) {
 
@@ -665,10 +608,6 @@ function simpanPerizinan() {
         isValid = false;
     }
 
-    /*
-     * JAM SELESAI
-     */
-
     if ($('#jam_selesai').length && !jamSelesai) {
 
         $('#error_jam_selesai').text(
@@ -679,10 +618,6 @@ function simpanPerizinan() {
 
         isValid = false;
     }
-
-    /*
-     * BATAS JAM MULAI
-     */
 
     if (
         $('#jam_mulai').length &&
@@ -699,10 +634,6 @@ function simpanPerizinan() {
         isValid = false;
     }
 
-    /*
-     * BATAS JAM SELESAI
-     */
-
     if (
         $('#jam_selesai').length &&
         jamSelesai &&
@@ -717,10 +648,6 @@ function simpanPerizinan() {
 
         isValid = false;
     }
-
-    /*
-     * JAM MULAI >= JAM SELESAI
-     */
 
     if (
         $('#jam_mulai').length &&
@@ -739,18 +666,9 @@ function simpanPerizinan() {
         isValid = false;
     }
 
-    /*
-     * Kalau masih ada error,
-     * jangan lanjut.
-     */
-
     if (!isValid) {
         return;
     }
-
-    /*
-     * KONFIRMASI
-     */
 
     Swal.fire({
         title: 'Simpan pengajuan?',
@@ -761,7 +679,6 @@ function simpanPerizinan() {
         cancelButtonText: 'Batal',
         reverseButtons: true
     }).then(function (result) {
-
         if (!result.isConfirmed) {
             return;
         }
@@ -775,11 +692,8 @@ function simpanPerizinan() {
             processData: false,
             contentType: false,
             dataType: 'json',
-
             success: function (response) {
-
                 if (response.status === 'success') {
-
                     window.location.href =
                         '<?= base_url('perizinan') ?>';
 
@@ -787,7 +701,6 @@ function simpanPerizinan() {
                 }
 
                 if (response.errors) {
-
                     $.each(
                         response.errors,
                         function (field, message) {
@@ -810,7 +723,6 @@ function simpanPerizinan() {
             },
 
             error: function () {
-
                 Swal.fire({
                     icon: 'error',
                     title: 'Terjadi Kesalahan',
@@ -821,16 +733,14 @@ function simpanPerizinan() {
     });
 }
 
-/*
- * =========================
- * TANGGAL
- * =========================
- */
-
+// Tanggal
 $(document).on(
     'input',
     '#tanggal_mulai',
     function () {
+        if (window.perizinanInitializing) {
+            return;
+        }
         validateTanggalMulai();
     }
 );
@@ -839,6 +749,9 @@ $(document).on(
     'input',
     '#tanggal_selesai',
     function () {
+        if (window.perizinanInitializing) {
+            return;
+        }
         validateTanggalSelesai();
     }
 );
@@ -847,6 +760,9 @@ $(document).on(
     'change.datetimepicker',
     '#tanggal_mulai_picker',
     function () {
+        if (window.perizinanInitializing) {
+            return;
+        }
         validateTanggalMulai();
     }
 );
@@ -855,21 +771,17 @@ $(document).on(
     'change.datetimepicker',
     '#tanggal_selesai_picker',
     function () {
+        if (window.perizinanInitializing) {
+            return;
+        }
         validateTanggalSelesai();
     }
 );
-
-/*
- * =========================
- * BUKA DATE / TIME PICKER
- * =========================
- */
 
 $(document).on(
     'click focus',
     '#tanggal_mulai, #tanggal_selesai, #jam_mulai, #jam_selesai',
     function () {
-
         var pickerId = $(this).data('target');
 
         if (pickerId) {
@@ -878,23 +790,11 @@ $(document).on(
     }
 );
 
-/*
- * =========================
- * CLEAR ERROR INPUT
- * =========================
- */
-
 $(document).on(
     'input change',
     '#form-perizinan input, #form-perizinan textarea',
     function () {
-
         var id = $(this).attr('id');
-
-        /*
-         * Jangan clear error tanggal otomatis.
-         * Karena validasi tanggal mempunyai aturan sendiri.
-         */
 
         if (
             id === 'tanggal_mulai' ||
@@ -904,56 +804,38 @@ $(document).on(
         }
 
         if ($(this).val()) {
-
             $('#error_' + id).text('');
-
             $(this).removeClass('is-invalid');
         }
     }
 );
 
-/*
- * =========================
- * ATTACHMENT
- * =========================
- */
-
+// File Uploud
 $(document).on(
     'change',
     '#attachment',
     function () {
-
         var fileName = this.files.length
             ? this.files[0].name
             : 'Pilih file';
 
-        $(this)
-            .next('.custom-file-label')
-            .text(fileName);
-
+        $(this).next('.custom-file-label').text(fileName);
         if (this.files.length) {
-
             $('#current_attachment').text(
                 'File baru dipilih: ' + fileName
             );
         } else {
-
             $('#current_attachment').text('');
         }
     }
 );
 
-/*
- * =========================
- * INPUT FOCUS
- * =========================
- */
+// Input Form Focus
 
 $(document).on(
     'focus',
     '.form-control',
     function () {
-
         $(this)
             .closest('.input-group')
             .addClass('border-primary');
@@ -964,34 +846,17 @@ $(document).on(
     'blur',
     '.form-control',
     function () {
-
         $(this)
             .closest('.input-group')
             .removeClass('border-primary');
     }
 );
 
-/*
- * =========================
- * DOCUMENT READY
- * =========================
- */
 
 $(function () {
-
-    /*
-     * DataTable
-     */
-
     if ($('#table-perizinan').length) {
         initTablePerizinan();
     }
-
-    /*
-     * Select2 JENIS PERIZINAN
-     *
-     * Hanya initialize sekali.
-     */
 
     if ($('#jenis_perizinan_id').length) {
 
