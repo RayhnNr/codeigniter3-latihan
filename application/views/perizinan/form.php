@@ -14,7 +14,7 @@
                 <label>Jenis Perizinan</label>
 
                 <select id="jenis_perizinan_id" name="jenis_perizinan_id" class="form-control" onchange="gantiFormPerizinan(this.value)">
-                    <option value="">-- Pilih Jenis --</option>
+                    <option value=""></option>
                     <?php foreach ($jenis_perizinan as $j): ?>
                         <option value="<?= $j->jenis_perizinan_id ?>"
                             <?= $is_edit && $j->jenis_perizinan_id == $perizinan->jenis_perizinan_id ? 'selected' : '' ?>>
