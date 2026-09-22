@@ -29,8 +29,8 @@ class Perizinan extends MY_Controller {
         $tanggal_dari = $this->input->post('tanggal_dari');
         $tanggal_sampai = $this->input->post('tanggal_sampai');
 
-        $this->db->select('perizinan.*, jenis_perizinan.jenis_perizinan_name, employees.employee_name, product_status.product_status_name');
-        $this->db->from('perizinan');
+        // $this->db->select('perizinan.*, jenis_perizinan.jenis_perizinan_name, employees.employee_name, product_status.product_status_name');
+        // $this->db->from('perizinan');
         $this->db->join('jenis_perizinan', 'jenis_perizinan.jenis_perizinan_id = perizinan.jenis_perizinan_id', 'left');
         $this->db->join('employees', 'employees.employee_id = perizinan.employee_id', 'left');
         $this->db->join('product_status', 'product_status.product_status_id = perizinan.status', 'left');
@@ -47,7 +47,8 @@ class Perizinan extends MY_Controller {
         }
 
         $this->db->order_by('perizinan.perizinan_id', 'DESC');
-        $rows = $this->db->get()->result();
+        // $rows = $this->db->get()->result();
+        $rows = $this->Perizinan_model->get();
 
         $data = [];
         foreach ($rows as $index => $row) {

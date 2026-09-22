@@ -12,9 +12,9 @@ class Categories extends MY_Controller {
     public function index() {
         $data['title'] = 'Category';
         $this->load->view('templates/header', $data);
-        $this->load->view('categories/index', $data);
+        $this->load->view($this->uri->rsegment(1) . '/index', $data);
         $this->load->view('templates/footer');
-        $this->load->view('categories/js', $data);
+        $this->load->view($this->uri->rsegment(1) . '/js', $data);
     }
 
     public function get_data() {
@@ -55,7 +55,7 @@ class Categories extends MY_Controller {
         $data['status_list'] = $this->Categories_model->get_status_options();
         $data['active_status_id'] = $this->Categories_model->get_status_id_by_name('Aktif');
         $data['inactive_status_id'] = $this->Categories_model->get_status_id_by_name('Nonaktif');
-        $this->load->view('categories/edit', $data);
+        $this->load->view($this->uri->rsegment(1) . '/edit', $data);
     }
 
     public function save() {
