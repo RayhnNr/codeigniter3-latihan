@@ -392,7 +392,7 @@ window.addEventListener('load', function () {
         reader.onload = function (e) {
             $preview.html(
                 '<div class="mt-2">' +
-                    '<img src="' + e.target.result + '" alt="Foto Employee" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">' +
+                    '<img src="' + e.target.result + '" alt="Foto Employee" class="img-thumbnail img-preview-clickable shadow-sm" style="width: 160px; height: 160px; object-fit: cover; cursor: pointer;" title="Klik untuk memperbesar">' +
                     '<small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik foto untuk memperbesar</small>' +
                 '</div>'
             );

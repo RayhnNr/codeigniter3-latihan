@@ -103,7 +103,7 @@
                         <?php if (!empty($employee->photo) && file_exists('./uploads/employees/photo/' . $employee->photo)): ?>
                             <div id="old_photo_box">
                                 <small class="text-muted d-block mb-1">Foto saat ini:</small>
-                                <img src="<?= base_url('uploads/employees/photo/' . $employee->photo) ?>" alt="Foto Employee" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">
+                                <img src="<?= base_url('uploads/employees/photo/' . $employee->photo) ?>" alt="Foto Employee" class="img-thumbnail img-preview-clickable shadow-sm" style="width: 160px; height: 160px; object-fit: cover; cursor: pointer;" title="Klik untuk memperbesar">
                                 <small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik foto untuk memperbesar</small>
                             </div>
                         <?php endif; ?>
@@ -462,7 +462,7 @@ window.addEventListener('load', function () {
             $('#photo_preview').append(
                 '<div class="new-preview mt-2">' +
                     '<small class="text-success d-block mb-1 font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Foto baru yang dipilih:</small>' +
-                    '<img src="' + e.target.result + '" alt="Foto Employee Baru" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">' +
+                    '<img src="' + e.target.result + '" alt="Foto Employee Baru" class="img-thumbnail img-preview-clickable shadow-sm" style="width: 160px; height: 160px; object-fit: cover; cursor: pointer;" title="Klik untuk memperbesar">' +
                     '<small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik foto untuk memperbesar</small>' +
                 '</div>'
             );
