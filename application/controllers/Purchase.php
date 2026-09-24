@@ -38,6 +38,198 @@ class Purchase extends MY_Controller {
         echo json_encode($data);
     }
 
+    public function ajax_index()
+    {
+        $csrname = $this->security->get_csrf_token_name();
+        $csrhash = $this->security->get_csrf_hash();
+
+        $length = (int) $this->input->post('length');
+        $start = (int) $this->input->post('start');
+
+        $status = $this->input->post('status', TRUE);
+        $supplier_id = $this->input->post('supplier_id', TRUE);
+        $start_date = $this->input->post('start_date', TRUE);
+        $end_date = $this->input->post('end_date', TRUE);
+        $payment_type = $this->input->post('payment_type', TRUE);
+
+        $this->db->join('supplier', 'supplier.id = purchase.supplier_id', 'left');
+        $this->db->join('product_status', 'product_status.product_status_id = purchase.status', 'left');
+        $this->db->join('users', 'users.user_id = purchase.created_by', 'left');
+
+        if ($status !== '' && $status !== null) {
+            $this->db->where('purchase.status', $status);
+        }
+
+        if (!empty($supplier_id)) {
+            $this->db->where('purchase.supplier_id', $supplier_id);
+        }
+
+        if (!empty($start_date) && !empty($end_date)) {
+            $this->db->where('purchase.purchase_date >=', $start_date);
+            $this->db->where('purchase.purchase_date <=', $end_date);
+        }
+
+        if (!empty($payment_type)) {
+            $this->db->where('purchase.payment_type', $payment_type);
+        }
+
+        // Search DataTables
+        $search = $this->input->post('search');
+
+        if ($search && !empty($search['value'])) {
+            $keyword = $search['value'];
+
+            $this->db->group_start();
+            $this->db->like('purchase.purchase_code', $keyword);
+            $this->db->or_like('supplier.supplier_name', $keyword);
+            $this->db->or_like('purchase.purchase_date', $keyword);
+            $this->db->or_like('purchase.due_date', $keyword);
+            $this->db->or_like('purchase.payment_type', $keyword);
+            $this->db->or_like('product_status.product_status_name', $keyword);
+            $this->db->or_like('users.username', $keyword);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('purchase.purchase_id', 'DESC');
+
+        if ($length != -1) {
+            $this->db->limit($length, $start);
+        }
+
+        $content = $this->Purchase_model->get();
+
+        $data = array();
+        $no = $start;
+
+        foreach ($content as $val) {
+            $no++;
+
+            $row = array();
+            $row[] = $no;
+            $row[] = '
+                <button type="button" class="btn btn-sm btn-block btn-info" onclick="detailData(' . (int) $val->purchase_id . ')">
+                    <i class="fas fa-eye"></i> ' . htmlspecialchars($val->purchase_code, ENT_QUOTES, 'UTF-8') . '
+                </button>
+            ';
+            $row[] = $val->nama_supplier;
+            $row[] = $val->purchase_date;
+            $row[] = $val->due_date;
+            $row[] = $val->payment_type;
+            $row[] = $val->product_status_name;
+            $row[] = $val->username;
+
+            $row[] = '<div align="center" class="text-nowrap">
+                <a href="' . base_url('purchase/edit/' . $val->purchase_id) . '" class="btn btn-sm btn-warning mb-2 mr-2">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <button type="button" class="btn btn-sm btn-danger btn-delete mb-2 mr-2"
+                    data-id="' . $val->purchase_id . '"
+                    data-code="' . $val->purchase_code . '">
+                    <i class="fas fa-trash"></i> Hapus
+                </button>
+            </div>';
+
+            $data[] = $row;
+        }
+
+        $output = array(
+            'draw' => (int) $this->input->post('draw'),
+            'recordsTotal' => $this->total_record(),
+            'recordsFiltered' => $this->total_record(TRUE),
+            'data' => $data
+        );
+
+        $output[$csrname] = $csrhash;
+
+        echo json_encode($output);
+        exit;
+    }
+
+    public function total_record($filtered = FALSE)
+    {
+        $this->db->select('COUNT(purchase.purchase_id) as total', FALSE);
+
+        $this->db->join('supplier', 'supplier.id = purchase.supplier_id', 'left');
+        $this->db->join('product_status', 'product_status.product_status_id = purchase.status', 'left');
+        $this->db->join('users', 'users.user_id = purchase.created_by', 'left');
+
+        if ($filtered) {
+            $search = $this->input->post('search');
+
+            if ($search && !empty($search['value'])) {
+                $keyword = $search['value'];
+
+                $this->db->group_start();
+                $this->db->like('purchase.purchase_code', $keyword);
+                $this->db->or_like('supplier.supplier_name', $keyword);
+                $this->db->or_like('purchase.purchase_date', $keyword);
+                $this->db->or_like('purchase.due_date', $keyword);
+                $this->db->or_like('purchase.payment_type', $keyword);
+                $this->db->or_like('product_status.product_status_name', $keyword);
+                $this->db->or_like('users.username', $keyword);
+                $this->db->group_end();
+            }
+        }
+
+        return (int) $this->db->get('purchase')->row()->total;
+    }
+
+    public function search($with_order = TRUE)
+    {
+        $column_order = array(
+            NULL,
+            'purchase.purchase_code',
+            'supplier.supplier_name',
+            'purchase.purchase_date',
+            'purchase.due_date',
+            'purchase.payment_type',
+            'product_status.product_status_name',
+            'users.username',
+            NULL
+        );
+
+        $column_search = array(
+            'purchase.purchase_code',
+            'supplier.supplier_name',
+            'purchase.purchase_date',
+            'purchase.due_date',
+            'purchase.payment_type',
+            'product_status.product_status_name',
+            'users.username'
+        );
+
+        $search = $this->input->post('search');
+
+        if ($search && !empty($search['value'])) {
+            $this->db->group_start();
+
+            foreach ($column_search as $key => $item) {
+                if ($key === 0) {
+                    $this->db->like($item, $search['value']);
+                } else {
+                    $this->db->or_like($item, $search['value']);
+                }
+            }
+
+            $this->db->group_end();
+        }
+
+        $order = $this->input->post('order');
+
+        if ($with_order) {
+            if ($order) {
+                $column = (int) $order[0]['column'];
+                $direction = strtoupper($order[0]['dir']) === 'ASC' ? 'ASC' : 'DESC';
+
+                if (isset($column_order[$column]) && $column_order[$column] !== NULL) {
+                    $this->db->order_by($column_order[$column], $direction);
+                }
+            } else {
+                $this->db->order_by('purchase.purchase_id', 'DESC');
+            }
+        }
+    }
+
     public function create(){
         $data['title'] = 'Tambah Purchase';
         $data['status'] = $this->Purchase_model->get_status();

@@ -1,8 +1,16 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Purchase_model extends CI_Model
+class Purchase_model extends MY_Model
 {
+    protected $_table_name = 'purchase';
+
+    protected $_primary_key = 'purchase_id';
+
+    protected $_primary_filter = 'intval';
+
+    protected $_timestamps = FALSE;
+
     protected $table = 'purchase';
 
     public function __construct()

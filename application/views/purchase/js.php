@@ -71,76 +71,30 @@
 
 		var table = $('#table-purchase').DataTable({
 			processing: true,
-			serverSide: false,
+			serverSide: true,
 			responsive: true,
 			lengthChange: true,
 			autoWidth: false,
+			pageLength: 10,
 			ajax: {
-				url: '<?= base_url('purchase/get_data') ?>',
+				url: '<?= base_url('purchase/ajax_index') ?>',
 				type: 'POST',
-				dataSrc: '',
-				data: function (data) {
+				data: function(data) {
 					data.status = $('#filter_status').val();
 					data.supplier_id = $('#filter_supplier').val();
 					data.start_date = selectedStartDate;
 					data.end_date = selectedEndDate;
-                    data.payment_type = $('#filter_pembayaran').val();
+					data.payment_type = $('#filter_pembayaran').val();
 				}
 			},
-			columns: [
-				{
-					data: null,
-					render: function (data, type, row, meta) {
-						return meta.row + 1;
-					},
-					orderable: false,
-					searchable: false
-				},
-				// { data: 'purchase_code' },
-				{ data: null,
-					render: function (data, type, row){
-						return `
-							<button type="button" class="btn btn-sm btn-block btn-info" onclick="detailData('${row.purchase_id}')">
-								<i class="fas fa-eye"></i> ${row.purchase_code}
-							</button>
-						`;
-					}
-				},
-				{ data: 'nama_supplier' },
-				{ data: 'purchase_date' },
-				{ data: 'due_date' },
-				{ data: 'payment_type' },
-				{
-					data: 'product_status_name',
-					render: function (data) {
-						return renderStatusBadge(data);
-					}
-				},
-				{
-					data: 'created_by_username',
-					render: function(data, type, row) {
-						return data || '-';
-					}
-				},
-				{
-					data: null,
-					orderable: false,
-					searchable: false,
-					width: "150px",
-					render: function (data, type, row) {
-						return `
-							<div class="d-flex flex-wrap mb-n2">
-								<a href="<?= base_url('purchase/edit/') ?>${row.purchase_id}" class="btn btn-sm btn-warning mb-2 mr-2">
-									<i class="fas fa-edit"></i> Edit
-								</a>
-								<button type="button" class="btn btn-sm btn-danger btn-delete mb-2 mr-2" data-id="${row.purchase_id}" data-code="${row.purchase_code}">
-									<i class="fas fa-trash"></i> Hapus
-								</button>
-							</div>
-						`;
-					}
+			columnDefs: [
+			{
+				targets: 6,
+				render: function(data) {
+					return renderStatusBadge(data);
 				}
-			]
+			}
+		]
 		});
 
 		$('#btn_filter').on('click', function () {
