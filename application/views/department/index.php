@@ -54,12 +54,13 @@
                                 }
                             }
                         ?>
-                        <input type="hidden" name="status" id="department_status_hidden" value="<?= $inactive_status_id ?>">
+                        <input type="hidden" name="status" id="department_status_hidden" value="<?= $active_status_id ?>">
                         <input type="checkbox" id="department_status" value="<?= $active_status_id ?>"
                             data-toggle="toggle" data-on="Aktif" data-off="Nonaktif"
                             data-onstyle="success" data-offstyle="secondary" data-width="110"
                             data-active-status-id="<?= $active_status_id ?>"
-                            data-inactive-status-id="<?= $inactive_status_id ?>">
+                            data-inactive-status-id="<?= $inactive_status_id ?>"
+                            checked>
                         <small class="text-danger" id="error_status"></small>
                     </div>
                 </div>
@@ -77,13 +78,17 @@ var table;
 
 window.addEventListener('load', function () {
     $('#department_status').bootstrapToggle();
-    $('#department_status').bootstrapToggle('off');
-    $('#department_status_hidden').val($('#department_status').data('inactive-status-id'));
+
+    var activeStatusId = $('#department_status').data('active-status-id');
+
+    $('#department_status').bootstrapToggle('on');
+    $('#department_status_hidden').val(activeStatusId);
     $('#department_status').on('change', function () {
         var activeStatusId = $(this).data('active-status-id');
         var inactiveStatusId = $(this).data('inactive-status-id');
         $('#department_status_hidden').val($(this).prop('checked') ? activeStatusId : inactiveStatusId);
-    });
+    }).trigger('change');
+
 
     table = $('#table-data').DataTable({
         processing: true,
@@ -195,8 +200,8 @@ function openForm(id) {
     var inactiveStatusId = $('#department_status').data('inactive-status-id');
 
     if (id == 0) {
-        $('#department_status').bootstrapToggle('off');
-        $('#department_status_hidden').val(inactiveStatusId);
+        $('#department_status').bootstrapToggle('on');
+        $('#department_status_hidden').val(activeStatusId);
     } else {
         $('#department_status').bootstrapToggle(activeStatusId ? 'on' : 'off');
         $('#department_status_hidden').val(inactiveStatusId);

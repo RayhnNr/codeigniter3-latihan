@@ -119,15 +119,22 @@ class Purchase extends MY_Controller {
             $row[] = $val->username;
 
             $row[] = '<div align="center" class="text-nowrap">
-                <a href="' . base_url('purchase/edit/' . $val->purchase_id) . '" class="btn btn-sm btn-warning mb-2 mr-2">
-                    <i class="fas fa-edit"></i> Edit
-                </a>
-                <button type="button" class="btn btn-sm btn-danger btn-delete mb-2 mr-2"
-                    data-id="' . $val->purchase_id . '"
-                    data-code="' . $val->purchase_code . '">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>
-            </div>';
+                        <a href="' . base_url('purchase/edit/' . $val->purchase_id) . '" class="btn btn-sm btn-warning mb-2 mr-2">
+                            <i class="fas fa-edit"></i>
+                        </a>
+
+                        <a href="' . base_url('purchase/print/' . $val->purchase_id) . '" 
+                        target="_blank" 
+                        class="btn btn-sm btn-secondary mb-2 mr-2">
+                            <i class="fas fa-print"></i>
+                        </a>
+
+                        <button type="button" class="btn btn-sm btn-danger btn-delete mb-2 mr-2"
+                            data-id="' . $val->purchase_id . '"
+                            data-code="' . $val->purchase_code . '">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                     </div>';
 
             $data[] = $row;
         }
@@ -345,6 +352,18 @@ class Purchase extends MY_Controller {
         }
         header('Content-Type: application/json');
         echo json_encode($purchase);
+    }
+
+    public function print($id = null){
+        $purchase = $this->Purchase_model->get_purchase_detail($id);
+
+        if (!$purchase) {
+            $this->session->set_flashdata('error', 'Purchase tidak ditemukan.');
+            redirect('purchase');
+            return;
+        }
+        $this->load->view('purchase/print', $purchase);
+
     }
 
     public function edit($id = null){

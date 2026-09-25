@@ -55,12 +55,13 @@
                                 }
                             }
                         ?>
-                        <input type="hidden" name="status" id="position_status_hidden" value="<?= $inactive_status_id ?>">
+                        <input type="hidden" name="status" id="position_status_hidden" value="<?= $active_status_id ?>">
                         <input type="checkbox" id="position_status" value="<?= $active_status_id ?>"
                             data-toggle="toggle" data-on="Aktif" data-off="Nonaktif"
                             data-onstyle="success" data-offstyle="secondary" data-width="110"
                             data-active-status-id="<?= $active_status_id ?>"
-                            data-inactive-status-id="<?= $inactive_status_id ?>">
+                            data-inactive-status-id="<?= $inactive_status_id ?>"
+                            checked>
                         <small class="text-danger" id="error_status"></small>
                     </div>
                 </div>
@@ -78,8 +79,11 @@ var table;
 
 window.addEventListener('load', function () {
     $('#position_status').bootstrapToggle();
-    $('#position_status').bootstrapToggle('off');
-    $('#position_status_hidden').val($('#position_status').data('inactive-status-id'));
+
+    var activeStatusId = $('#position_status').data('active-status-id');
+
+    $('#position_status').bootstrapToggle('on');
+    $('#position_status_hidden').val(activeStatusId);
     $('#position_status').on('change', function () {
         var activeStatusId = $(this).data('active-status-id');
         var inactiveStatusId = $(this).data('inactive-status-id');
@@ -192,8 +196,8 @@ function openForm(id) {
     var inactiveStatusId = $('#position_status').data('inactive-status-id');
 
     if (id == 0) {
-        $('#position_status').bootstrapToggle('off');
-        $('#position_status_hidden').val(inactiveStatusId);
+        $('#position_status').bootstrapToggle('on');
+        $('#position_status_hidden').val(activeStatusId);
     } else {
         $('#position_status').bootstrapToggle(activeStatusId ? 'on' : 'off');
         $('#position_status_hidden').val(inactiveStatusId);

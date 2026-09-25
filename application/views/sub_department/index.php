@@ -82,12 +82,13 @@
                                 }
                             }
                         ?>
-                        <input type="hidden" name="status" id="sub_department_status_hidden" value="<?= $inactive_status_id ?>">
+                        <input type="hidden" name="status" id="sub_department_status_hidden" value="<?= $active_status_id ?>">
                         <input type="checkbox" id="sub_department_status" value="<?= $active_status_id ?>"
                             data-toggle="toggle" data-on="Aktif" data-off="Nonaktif"
                             data-onstyle="success" data-offstyle="secondary" data-width="110"
                             data-active-status-id="<?= $active_status_id ?>"
-                            data-inactive-status-id="<?= $inactive_status_id ?>">
+                            data-inactive-status-id="<?= $inactive_status_id ?>"
+                            checked>
                         <small class="text-danger" id="error_status"></small>
                     </div>
                 </div>
@@ -120,8 +121,11 @@ window.addEventListener('load', function () {
     });
 
     $('#sub_department_status').bootstrapToggle();
-    $('#sub_department_status').bootstrapToggle('off');
-    $('#sub_department_status_hidden').val($('#sub_department_status').data('inactive-status-id'));
+
+    var activeStatusId = $('#sub_department_status').data('active-status-id');
+
+    $('#sub_department_status').bootstrapToggle('on');
+    $('#sub_department_status_hidden').val(activeStatusId);
     $('#sub_department_status').on('change', function () {
         var activeStatusId = $(this).data('active-status-id');
         var inactiveStatusId = $(this).data('inactive-status-id');
@@ -242,8 +246,8 @@ function openForm(id) {
     var inactiveStatusId = $('#sub_department_status').data('inactive-status-id');
 
     if (id == 0) {
-        $('#sub_department_status').bootstrapToggle('off');
-        $('#sub_department_status_hidden').val(inactiveStatusId);
+        $('#sub_department_status').bootstrapToggle('on');
+        $('#sub_department_status_hidden').val(activeStatusId);
         $('#department_id').val('').trigger('change');
         $('#modalFormLabel').text('Tambah Sub Department');
         $('#modalForm').modal('show');

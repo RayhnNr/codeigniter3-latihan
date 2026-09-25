@@ -31,7 +31,7 @@ class Auth extends CI_Controller{
             'img_width'     => 150,
             'img_height'    => 30,
             'expiration'    => 7200,
-            'word_length'   => 5,
+            'word_length'   => 3,
             'font_size'     => 16,
             'img_id'        => 'Imageid',
             'pool'          => '0123456789',
