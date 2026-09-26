@@ -273,31 +273,31 @@ window.addEventListener('load', function () {
                 $('#teknisi-text').text(d.teknisi_name ? d.teknisi_name : '-');
 
                 var isFinal = (d.status === 'DONE' || d.status === 'CANCELLED');
+                var canEdit = res.can_edit;
+                var isEditable = !isFinal && canEdit;
 
                 $('#select-teknisi').val(d.teknisi_id ? d.teknisi_id : '').trigger('change');
-                $('#select-teknisi').prop('disabled', isFinal);
-
-                // Tombol Assign disembunyikan total kalau status sudah final
-                $('#btn-assign').toggle(!isFinal);
+                $('#select-teknisi').prop('disabled', !isEditable);
+                $('#btn-assign').toggle(isEditable);
 
                 if (d.status === 'OPEN' && !d.teknisi_id) {
                     $('#card-update-status').hide();
                 } else {
                     $('#card-update-status').show();
                     var statusHtml = '';
-                    // Menentukan  dropdown status
                     var statusOptions = isFinal ? [d.status] : getAllowedNextStatus(d.status);
 
-                    statusHtml += '<select id="select-status" class="form-control select2 mb-2" ' + (isFinal ? 'disabled' : '') + '>';
+                    // ganti isFinal jadi !isEditable di sini
+                    statusHtml += '<select id="select-status" class="form-control select2 mb-2" ' + (!isEditable ? 'disabled' : '') + '>';
                     statusOptions.forEach(function (s) {
                         statusHtml += '<option value="' + s + '"' + (s === d.status ? ' selected' : '') + '>' + s + '</option>';
                     });
                     statusHtml += '</select>';
 
-                    statusHtml += '<textarea id="catatan-teknisi" class="form-control my-2 " rows="3" placeholder="Catatan (wajib diisi untuk DONE/CANCELLED)" ' + (isFinal ? 'disabled' : '') + '>' + (d.catatan_teknisi ? d.catatan_teknisi : '') + '</textarea>';
+                    statusHtml += '<textarea id="catatan-teknisi" class="form-control my-2 " rows="3" placeholder="Catatan (wajib diisi untuk DONE/CANCELLED)" ' + (!isEditable ? 'disabled' : '') + '>' + (d.catatan_teknisi ? d.catatan_teknisi : '') + '</textarea>';
 
-                    // Tombol Update Status HANYA muncul kalau belum final
-                    if (!isFinal) {
+                    // tombol update status cuma muncul kalau isEditable, bukan cuma !isFinal
+                    if (isEditable) {
                         statusHtml += '<button type="button" id="btn-update-status" class="btn btn-warning btn-block">Update Status</button>';
                     }
                 }
@@ -435,6 +435,10 @@ window.addEventListener('load', function () {
                 teknisi_id: $('#filter-teknisi').val()
             },
             success: function (res) {
+                console.log('Role:', res.debug.role);
+                console.log('User ID:', res.debug.user_id);
+                console.log('Branch:', res.debug.branch);
+                console.log('Jumlah data:', res.debug.count);
                 var html = '';
                 if (res.data.length > 0) {
                     $.each(res.data, function (i, t) {

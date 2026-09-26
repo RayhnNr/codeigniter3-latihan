@@ -72,7 +72,7 @@ class Ticket_model extends CI_Model
 
 
     public function get_by_id($id){
-        $this->db->select('tickets.*, departments.department_name, teknisi.nama as teknisi_nama, users.username as created_by_username');
+        $this->db->select('tickets.*, departments.department_name, teknisi.nama as teknisi_name, users.username as created_by_username');
         $this->db->from($this->table);
         $this->db->join('departments', 'departments.department_id = tickets.departemen_id', 'left');
         $this->db->join('teknisi', 'teknisi.id = tickets.teknisi_id', 'left');
@@ -82,6 +82,34 @@ class Ticket_model extends CI_Model
         $query = $this->db->get();
 
         return $query->row();
+    }
+
+    public function get_by_user($user_id, $filter = array())
+    {
+        $this->db->select('tickets.*, departments.department_name, teknisi.nama as teknisi_name, users.username as created_by_username');
+        $this->db->from($this->table);
+        $this->db->join('departments', 'departments.department_id = tickets.departemen_id', 'left');
+        $this->db->join('teknisi', 'teknisi.id = tickets.teknisi_id', 'left');
+        $this->db->join('users', 'users.user_id = tickets.created_by', 'left');
+
+        // Filter utama: cuma tiket yang dibuat oleh user ini
+        $this->db->where('tickets.created_by', $user_id);
+
+        // Filter tambahan (opsional)
+        if (!empty($filter['status'])) {
+            $this->db->where('tickets.status', $filter['status']);
+        }
+        if (!empty($filter['prioritas'])) {
+            $this->db->where('tickets.prioritas', $filter['prioritas']);
+        }
+        if (!empty($filter['teknisi_id'])) {
+            $this->db->where('tickets.teknisi_id', $filter['teknisi_id']);
+        }
+
+        $this->db->order_by('tickets.id', 'DESC');
+
+        $query = $this->db->get();
+        return $query->result();
     }
     public function get_teknisi_by_id($id)
     {

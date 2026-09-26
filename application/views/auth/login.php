@@ -41,6 +41,9 @@
                     <label>Captcha</label>
                     <br>
                     <span id="captcha-wrapper"><?= $captcha_image ?></span>
+                    <button type="button" id="btn-refresh-captcha" class="btn btn-sm btn-primary mt-1">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
                 </div>
                 <div class="form-group">
                     <label>Enter Captcha Text</label>
@@ -95,6 +98,17 @@ $('#form-login').on('submit', function(e){
         }
     });
 });
+$(document).ready(function() {
+        $('#btn-refresh-captcha').on('click', function() {
+            $.ajax({
+                url: '<?php echo base_url("auth/refresh_captcha"); ?>',
+                type: 'GET',
+                success: function(response) {
+                    $('#captcha-wrapper').html(response);
+                }
+            });
+        });
+    });
 </script>
 </body>
 </html>

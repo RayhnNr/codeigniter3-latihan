@@ -19,12 +19,20 @@ class Ticket extends MY_Controller{
             'teknisi_id' => $this->input->get('teknisi_id'),
         );
 
-        $data['title']         = 'Ticket';
-        $data['user_role']     = $this->session->userdata('role');
-        $data['tickets']       = $this->Ticket_model->get_data($filter);
-        $data['teknisi']       = $this->Ticket_model->get_teknisi();
-        $data['status_list']   = $this->valid_status;
-        $data['prioritas_list']= $this->prioritas_filter;
+        $role    = $this->session->userdata('role');
+        $user_id = $this->session->userdata('user_id');
+
+        if (!in_array($role, ['superadmin', 'it', 'admin'])) {
+            $data['tickets'] = $this->Ticket_model->get_by_user($user_id, $filter);
+        } else {
+            $data['tickets'] = $this->Ticket_model->get_data($filter);
+        }
+
+        $data['title']          = 'Ticket';
+        $data['user_role']      = $role;
+        $data['teknisi']        = $this->Ticket_model->get_teknisi();
+        $data['status_list']    = $this->valid_status;
+        $data['prioritas_list'] = $this->prioritas_filter;
 
         $this->load->view('templates/header', $data);
         $this->load->view('ticket/index', $data);
@@ -178,14 +186,28 @@ class Ticket extends MY_Controller{
     }
 
 
-    public function get_detail_json($id){
+    public function get_detail_json($id)
+    {
         $ticket = $this->Ticket_model->get_by_id($id);
+        $role    = $this->session->userdata('role');
+        $user_id = $this->session->userdata('user_id');
+
         if (!$ticket) {
             echo json_encode(['status' => false, 'message' => 'Ticket tidak ditemukan']);
             return;
         }
 
-        echo json_encode(['status' => true, 'data' =>$ticket]);
+        // Kalau bukan superadmin/it, wajib cek kepemilikan tiket
+        if (!in_array($role, ['superadmin', 'admin', 'it']) && $ticket->created_by != $user_id) {
+            echo json_encode(['status' => false, 'message' => 'Anda tidak memiliki akses ke ticket ini']);
+            return;
+        }
+
+        echo json_encode([
+            'status' => true,
+            'data' => $ticket,
+            'can_edit' => in_array($role, ['superadmin', 'it', 'admin'])
+        ]);
     }
 
     public function get_data_json(){
@@ -194,20 +216,43 @@ class Ticket extends MY_Controller{
             'prioritas' => $this->input->get('prioritas'),
             'teknisi_id' => $this->input->get('teknisi_id'),
         );
+        $role = $this->session->userdata('role');
+        $user_id = $this->session->userdata('user_id');
 
-        $tickets = $this->Ticket_model->get_data($filter);
+        if (!in_array($role, ['superadmin', 'admin', 'it'])) {
+            $branch = 'get_by_user';
+            $tickets = $this->Ticket_model->get_by_user($user_id, $filter);
+        } else {
+            $branch = 'get_data';
+            $tickets = $this->Ticket_model->get_data($filter);
+        }
 
-        echo json_encode(['status' => true, 'data' => $tickets]);
+        echo json_encode([
+            'status' => true,
+            'data' => $tickets,
+            'debug' => [
+                'role' => $role,
+                'user_id' => $user_id,
+                'branch' => $branch,
+                'count' => count($tickets)
+            ]
+        ]);
     }
 
 
     public function update_status_ajax($id){
         $ticket = $this->Ticket_model->get_by_id($id);
+        $role = $this->session->userdata('role');
+        if (!in_array($role, ['superadmin', 'it', 'admin'])) {
+            echo json_encode(['status' => false, 'message' => 'Akses ditolak']);
+            return;
+        }
 
         if (!$ticket) {
             echo json_encode(['status' => false, 'message' => 'Ticket tidak ditemukan']);
             return;
         }
+
 
         $status_baru = $this->input->post('status');
         $catatan_baru = $this->input->post('catatan_teknisi');
@@ -236,6 +281,11 @@ class Ticket extends MY_Controller{
     public function assign_teknisi_ajax(){
         $id = $this->input->post('ticket_id');
         $teknisi_id = $this->input->post('teknisi_id');
+        $role = $this->session->userdata('role');
+        if (!in_array($role, ['superadmin', 'it', 'admin'])) {
+            echo json_encode(['status' => false, 'message' => 'Akses ditolak']);
+            return;
+        }
 
         $ticket = $this->Ticket_model->get_by_id($id);
 
@@ -266,7 +316,7 @@ class Ticket extends MY_Controller{
         echo json_encode(array(
             'status'       => true,
             'message'      => 'Ticket berhasil di-assign ke ' . $teknisi->nama,
-            'teknisi_nama' => $teknisi->nama,
+            'teknisi_name' => $teknisi->nama,
             'status_baru'  => $ticket->status == 'OPEN' ? 'IN PROGRESS' : $ticket->status
         ));
     }

@@ -53,6 +53,20 @@ class Auth extends CI_Controller{
         return $cap['image'];
     }
 
+    public function refresh_captcha()
+    {
+        $img_path = FCPATH . 'captcha-images/';
+        $files = glob($img_path . '*.jpg');
+        $now = time();
+        foreach ($files as $file) {
+            if (is_file($file) && ($now - filemtime($file) > 60)) {
+                unlink($file);
+            }
+        }
+
+        echo $this->_generate_captcha();
+    }
+
     public function login(){
         header('Content-Type: application/json');
 
