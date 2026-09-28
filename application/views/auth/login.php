@@ -45,13 +45,17 @@
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
-                <div class="form-group">
-                    <label>Enter Captcha Text</label>
-                    <input type="text" name="captcha" class="form-control">
+                <div class="input-group">
+                    <input type="text" name="captcha" class="form-control" placeholder="Enter Captcha">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
                     <div class="invalid-feedback" id="error-captcha"></div>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <button type="submit" class="btn btn-primary btn-block mt-3">Login</button>
             </form>
             <div class="social-auth-links text-center mb-3">
                 <p> - OR - </p>

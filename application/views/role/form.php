@@ -45,7 +45,7 @@
                 <small class="text-muted d-block mb-2">Admin dan Super Admin otomatis memiliki akses ke semua menu.</small>
             <?php endif; ?>
             <div class="table-responsive">
-                <table class="table table-striped table-lg align-middle" id="table-permission">
+                <table class="table  table-lg align-middle" id="table-permission">
                     <thead>
                         <tr>
                             <th class="align-middle">Menu</th>
@@ -123,8 +123,10 @@ window.addEventListener('load', function () {
         width: '100%',
     });
 
+    // Simpan instance DataTable supaya bisa menjangkau semua baris (termasuk yang terfilter)
+    var permTable = null;
     if ($('#table-permission').length) {
-        $('#table-permission').DataTable({
+        permTable = $('#table-permission').DataTable({
             paging: false,
             info: false,
             ordering: true,
@@ -137,6 +139,11 @@ window.addEventListener('load', function () {
                 zeroRecords: 'Menu tidak ditemukan'
             }
         });
+    }
+
+    // Ambil elemen dari SEMUA baris DataTables, bukan hanya yang sedang tampil
+    function $all(selector) {
+        return permTable ? permTable.$(selector) : $(selector);
     }
 
     <?php if (!$readonly): ?>
@@ -157,41 +164,59 @@ window.addEventListener('load', function () {
     $('#role_name').on('input keyup change', fillSlug);
     fillSlug();
 
+    // Centang / hilangkan centang semua turunan (child, cucu, dst)
     function setDescendants(parentId, checked) {
-        $('[data-parent-id="' + parentId + '"]').each(function () {
+        $all('[data-parent-id="' + parentId + '"]').each(function () {
             $(this).prop('checked', checked);
             setDescendants($(this).data('menu-id'), checked);
         });
     }
 
+    // Parent tercentang hanya jika semua child-nya tercentang
     function syncParentCheckbox(parentId) {
         if (!parentId) return;
-        var $children = $('[data-parent-id="' + parentId + '"]');
-        var $parent = $('[data-menu-id="' + parentId + '"]');
+        var $children = $all('[data-parent-id="' + parentId + '"]');
+        var $parent = $all('[data-menu-id="' + parentId + '"]');
         if (!$children.length || !$parent.length) return;
         $parent.prop('checked', $children.filter(':checked').length === $children.length);
         syncParentCheckbox($parent.data('parent-id'));
     }
 
-    $('.icheck-permission').on('change', function () {
+    // Pakai delegasi ke tabel supaya tetap jalan meski baris di-redraw oleh DataTables
+    $('#table-permission').on('change', '.icheck-permission', function () {
         if ($(this).hasClass('permission-parent')) {
             setDescendants($(this).data('menu-id'), this.checked);
         }
         syncParentCheckbox($(this).data('parent-id'));
     });
 
-    // Checkbox "pilih semua" per kolom (View/Add/Edit/Delete)
+    // Checkbox "pilih semua" per kolom
     function bindCheckAll(column) {
         $('.check-all[data-column="' + column + '"]').on('change', function () {
             var checked = this.checked;
-            $('.perm-' + column).prop('checked', checked);
+            $all('.perm-' + column).prop('checked', checked);
         });
     }
     ['view'].forEach(bindCheckAll);
     // ['view', 'add', 'edit', 'delete'].forEach(bindCheckAll);
 
+    // Susun data form + checkbox dari baris yang sedang tersembunyi karena search
+    function buildFormData(form) {
+        var data = $(form).serializeArray();
+        if (permTable) {
+            permTable.$('input.perm-view:checked:not(:disabled)').each(function () {
+                var name = this.name;
+                var exists = data.some(function (d) { return d.name === name; });
+                if (!exists) data.push({ name: name, value: this.value });
+            });
+        }
+        return $.param(data);
+    }
+
     $('#formRole').on('submit', function (e) {
         e.preventDefault();
+
+        var form = this;
 
         $('.is-invalid').removeClass('is-invalid');
         $('.invalid-feedback').remove();
@@ -214,7 +239,7 @@ window.addEventListener('load', function () {
                     url: '<?= base_url('role/save') ?>',
                     type: 'POST',
                     dataType: 'json',
-                    data: $(this).serialize(),
+                    data: buildFormData(form),
                     success: function (result) {
                         if (result.status === 'success') {
                             window.location.href = '<?= base_url('role') ?>';
@@ -241,8 +266,6 @@ window.addEventListener('load', function () {
                 $btn.find('.btn-spinner').addClass('d-none');
             }
         });
-
-        
     });
     <?php endif; ?>
 });
