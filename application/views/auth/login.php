@@ -41,7 +41,7 @@
                     <label>Captcha</label>
                     <br>
                     <span id="captcha-wrapper"><?= $captcha_image ?></span>
-                    <button type="button" id="btn-refresh-captcha" class="btn btn-sm btn-primary mt-1">
+                    <button type="button" id="btn-refresh-captcha" class="btn btn-sm btn-primary">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
@@ -54,7 +54,7 @@
                 <button type="submit" class="btn btn-primary btn-block">Login</button>
             </form>
             <div class="social-auth-links text-center mb-3">
-                <p>- OR -</p>
+                <p> - OR - </p>
                 <a href="<?= base_url("auth/forgot_password") ?>" class="btn btn-block btn-danger">
                     <i class="fa fa-lock"></i> Lupa kata sandi saya.
                 </a>

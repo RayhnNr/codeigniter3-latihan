@@ -122,8 +122,8 @@
                     </div>
                 </div>
                 <!-- Detail Items -->
-                <div class="card table-responsive" id="detail-items">
-                    <table class="table table table-striped mb-0">
+                <div class="table-responsive border" id="detail-items">
+                    <table class="table table-striped mb-0">
                         <thead>
                             <tr>
                                 <th>Produk</th>
@@ -139,13 +139,9 @@
                 <!-- kiri Notes dan kanan subtotal discount, tax, dan grand total -->
                 <div class="row mt-3">
                     <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header bg-light py-2">
-                                <strong>Deskripsi</strong>
-                            </div>
-                            <div class="card-body py-2">
-                                <p id="detail-notes" class="text-justify mb-0"></p>
-                            </div>
+                        <strong class ="text-muted text-uppercase mb-1">Deskripsi</strong>
+                        <div class="py-2">
+                            <textarea id="detail-notes" class="form-control" rows="4" readonly></textarea>
                         </div>
                     </div>
                     <div class="col-md-6">

@@ -161,8 +161,8 @@
 					<tr>
 						<td>${item.product_name}</td>
 						<td>${item.qty}</td>
-						<td class="text-right">${formatMoney(item.price)}</td>
-						<td class="text-right">${formatMoney(subtotal)}</td>
+						<td>${formatMoney(item.price)}</td>
+						<td>${formatMoney(subtotal)}</td>
 					</tr>
 				`);
 			});
