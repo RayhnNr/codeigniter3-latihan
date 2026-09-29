@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Menu extends CI_Controller {
+class Menu extends MY_Controller {
 
     public function __construct() {
         parent::__construct();
@@ -55,8 +55,8 @@ class Menu extends CI_Controller {
             $id_safe = (int) $menu->id;
 
             $action = '
-                <button class="btn btn-warning btn-sm btn-edit" data-id="' . $id_safe . '"><i class="fas fa-edit"></i> Edit</button>
-                <button class="btn btn-danger btn-sm btn-delete" data-id="' . $id_safe . '"><i class="fas fa-trash"></i> Hapus</button>
+                <button class="btn btn-warning btn-sm btn-edit" data-id="' . $id_safe . '"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-danger btn-sm btn-delete" data-id="' . $id_safe . '"><i class="fas fa-trash"></i></button>
             ';
             $depth = (int) ($menu->depth ?? 0);
             $result[] = [

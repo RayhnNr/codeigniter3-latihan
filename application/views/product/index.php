@@ -86,7 +86,7 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <table class="table table-borderless table-sm mb-0">
+                        <table class="table table-borderless table-lg mb-0">
                             <tr>
                                 <th width="150" class="text-muted">Code Product</th>
                                 <td width="10">:</td>
@@ -128,11 +128,11 @@
                                 <td>:</td>
                                 <td id="detail-create-by"></td>
                             </tr>
-                            <tr>
+                            <!-- <tr>
                                 <td colspan="3">
                                     <hr class="my-2">
                                 </td>
-                            </tr>
+                            </tr> -->
                         </table>
                     </div>
                     <div class="col-md-6">

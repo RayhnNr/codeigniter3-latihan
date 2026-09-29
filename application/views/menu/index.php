@@ -6,7 +6,7 @@
         </button>
     </div>
     <div class="card-body">
-        <table class="table table-bordered table-striped" id="table-menu" style="width:100%">
+        <table class="table table-sm table-bordered table-striped" id="table-menu" style="width:100%">
             <thead>
                 <tr>
                 <th>Nama Menu</th>
