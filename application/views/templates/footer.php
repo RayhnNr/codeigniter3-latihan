@@ -83,6 +83,9 @@ function logout() {
         }
     });
 }
+$(document).ready(function () {
+    $('[data-widget="sidebar-search"]').SidebarSearch();
+});
 </script>
 
 </body>

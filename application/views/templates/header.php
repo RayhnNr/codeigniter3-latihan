@@ -114,6 +114,16 @@
     </a>
 
     <div class="sidebar">
+        <div class="form-inline mt-2 mb-2">
+            <div class="input-group" data-widget="sidebar-search" data-target="#sidebarnav">
+                <input class="form-control form-control-sidebar" type="search" placeholder="Search Menu" aria-label="Search">
+                <div class="input-group-append">
+                    <button class="btn btn-sidebar" type="submit">
+                        <i class="fas fa-search fa-fw"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
       <nav class="mt-2">
         <?php $current_section = strtolower($this->uri->segment(1)); ?>
         <?php $CI =& get_instance(); ?>
