@@ -57,6 +57,9 @@
 
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
 
+<!-- LightBox -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+
 <!-- jQuery Chained Remote (dependent/cascading dropdown via AJAX) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-chained/1.0.1/jquery.chained.remote.min.js"></script>
 
@@ -85,7 +88,19 @@ function logout() {
 }
 $(document).ready(function () {
     $('[data-widget="sidebar-search"]').SidebarSearch();
+
+    lightbox.option({
+      resizeDuration: 200,
+      wrapAround: true,
+      albumLabel: 'Foto %1 dari %2',
+      fadeDuration: 300,
+      fitImagesInViewport: true,
+      maxWidth: 600,
+      maxHeight: 600
+  });
 });
+
+    
 </script>
 
 </body>
