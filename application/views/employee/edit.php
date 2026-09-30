@@ -103,7 +103,9 @@
                         <?php if (!empty($employee->photo) && file_exists('./uploads/employees/photo/' . $employee->photo)): ?>
                             <div id="old_photo_box">
                                 <small class="text-muted d-block mb-1">Foto saat ini:</small>
-                                <img src="<?= base_url('uploads/employees/photo/' . $employee->photo) ?>" alt="Foto Employee" class="img-thumbnail img-preview-clickable shadow-sm" style="width: 160px; height: 160px; object-fit: cover; cursor: pointer;" title="Klik untuk memperbesar">
+                                <a href="<?= base_url('uploads/employees/photo/' . $employee->photo) ?>" data-lightbox="foto-lama">
+                                    <img src="<?= base_url('uploads/employees/photo/' . $employee->photo) ?>" alt="Foto Employee" class="img-thumbnail img-preview-clickable shadow-sm" style="width: 160px; height: 160px; object-fit: cover; cursor: pointer;" title="Klik untuk memperbesar">
+                                </a>
                                 <small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik foto untuk memperbesar</small>
                             </div>
                         <?php endif; ?>
@@ -157,7 +159,9 @@
                                         </small>
                                     </a>
                                 <?php else: ?>
-                                    <img src="<?= $file_url ?>" alt="Kartu BPJS" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">
+                                    <a href="<?= $file_url ?>" data-lightbox="foto-bpjs-lama">
+                                        <img src="<?= $file_url ?>" alt="Kartu BPJS" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">
+                                    </a>
                                     <small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik kartu untuk memperbesar</small>
                                 <?php endif; ?>
                             </div>
@@ -271,26 +275,6 @@
                 <span class="spinner-border spinner-border-sm d-none" id="btn-spinner" role="status"></span>
                 Update
             </button>
-        </div>
-
-        <!-- Modal Popup Preview Gambar -->
-        <div class="modal fade" id="modalImagePreview" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                <div class="modal-content border-0 shadow">
-                    <div class="modal-header bg-primary text-white py-2">
-                        <h5 class="modal-title" id="modalImageTitle"><i class="fas fa-image mr-2"></i>Preview Gambar</h5>
-                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body text-center p-3 bg-light">
-                        <img src="" id="modalPreviewImg" class="img-fluid rounded shadow-sm" style="max-height: 75vh; object-fit: contain;">
-                    </div>
-                    <div class="modal-footer py-2">
-                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <?= form_close() ?>
@@ -459,13 +443,15 @@ window.addEventListener('load', function () {
 
         var reader = new FileReader();
         reader.onload = function (e) {
-            $('#photo_preview').append(
-                '<div class="new-preview mt-2">' +
-                    '<small class="text-success d-block mb-1 font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Foto baru yang dipilih:</small>' +
-                    '<img src="' + e.target.result + '" alt="Foto Employee Baru" class="img-thumbnail img-preview-clickable shadow-sm" style="width: 160px; height: 160px; object-fit: cover; cursor: pointer;" title="Klik untuk memperbesar">' +
-                    '<small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik foto untuk memperbesar</small>' +
-                '</div>'
-            );
+            $('#photo_preview').append(`
+                <div class="new-preview mt-2">
+                    <small class="text-success d-block mb-1 font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Foto baru yang dipilih:</small>
+                    <a href="${e.target.result}" data-lightbox="preview-foto">
+                        <img src="${e.target.result}" alt="Foto Employee Baru" class="img-thumbnail img-preview-clickable shadow-sm" style="width: 160px; height: 160px; object-fit: cover; cursor: pointer;" title="Klik untuk memperbesar">
+                    </a>
+                    <small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik foto untuk memperbesar</small>
+                </div>
+            `);
         };
         reader.readAsDataURL(file);
     });
@@ -532,13 +518,15 @@ window.addEventListener('load', function () {
         } else {
             var reader = new FileReader();
             reader.onload = function (e) {
-                $('#bpjs_preview').append(
-                    '<div class="new-preview mt-2">' +
-                        '<small class="text-success d-block mb-1 font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Kartu BPJS baru yang dipilih:</small>' +
-                        '<img src="' + e.target.result + '" alt="Kartu BPJS Baru" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">' +
-                        '<small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik kartu untuk memperbesar</small>' +
-                    '</div>'
-                );
+                $('#bpjs_preview').append(`
+                    <div class="new-preview mt-2">
+                        <small class="text-success d-block mb-1 font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Kartu BPJS baru yang dipilih:</small>
+                        <a href="${e.target.result}" data-lightbox="preview-foto">
+                            <img src="${e.target.result}" alt="Kartu BPJS Baru" class="img-thumbnail img-preview-clickable shadow-sm" style="max-height: 160px; cursor: pointer;" title="Klik untuk memperbesar">
+                        </a>
+                        <small class="text-muted d-block mt-1"><i class="fas fa-search-plus mr-1"></i>Klik kartu untuk memperbesar</small>
+                    </div>
+                `);
             };
             reader.readAsDataURL(file);
         }
