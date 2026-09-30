@@ -167,7 +167,9 @@
 <template id="rowTemplateExisting">
     <div class="row-detail form-row align-items-center mb-3 pb-3 border-bottom" data-existing="1">
         <div class="col-md-2 text-center">
-            <img src="" class="img-preview img-thumbnail existing-img preview-image" alt="Preview gambar" style="width: 100px; height: 80px; object-fit: cover; cursor: pointer;">
+            <a href="#" class="link-preview" data-lightbox="product-photos">
+                <img src="" class="img-preview img-thumbnail existing-img" alt="Preview gambar" style="width: 100px; height: 80px; object-fit: cover; cursor: pointer;">
+            </a>
         </div>
 
         <div class="col-md-5">
@@ -201,7 +203,9 @@
 <template id="rowTemplateNew">
     <div class="row-detail form-row align-items-center mb-3 pb-3 border-bottom" data-existing="0">
         <div class="col-md-2 text-center">
-            <img src="<?= base_url('assets/img/no-image.svg') ?>" class="img-preview img-thumbnail preview-image" alt="No Image Available" style="width: 100px; height: 80px; object-fit: cover; cursor: pointer;">
+            <a href="<?= base_url('assets/img/no-image.svg') ?>" class="link-preview">
+                <img src="<?= base_url('assets/img/no-image.svg') ?>" class="img-preview img-thumbnail" alt="No Image Available" style="width: 100px; height: 80px; object-fit: cover;">
+            </a>
         </div>
 
         <div class="col-md-5">
@@ -272,15 +276,41 @@ window.addEventListener('load', function () {
 
     $('#status_toggle').trigger('change');
 
+    // ===== BARU: helper preview lightbox =====
+    var NO_IMG = '<?= base_url('assets/img/no-image.svg') ?>';
+
+    function setPreview($row, src) {
+        $row.find('.img-preview').attr('src', src).css('cursor', 'pointer');
+        $row.find('.link-preview')
+            .attr('href', src)
+            .attr('data-lightbox', 'product-photos');
+    }
+
+    function resetPreview($row) {
+        $row.find('.img-preview').attr('src', NO_IMG).css('cursor', 'default');
+        $row.find('.link-preview').attr('href', NO_IMG).removeAttr('data-lightbox');
+    }
+
+    // BARU: cegah link placeholder membuka tab baru
+    $(document).on('click', '.link-preview:not([data-lightbox])', function(e) {
+        e.preventDefault();
+    });
+
     // data gambar lama dari Controller, dikirim sebagai JSON
     var existingImages = <?= json_encode($product_images ?? []) ?>;
 
+    // DIUBAH: isi href + simpan original-src
     function addExistingRow(image) {
         let template = document.getElementById('rowTemplateExisting').content.cloneNode(true);
         $('#wrapperDetail').append(template);
 
         let $lastRow = $('#wrapperDetail .row-detail').last();
-        $lastRow.find('.existing-img').attr('src', '<?= base_url('uploads/products/') ?>' + encodeURIComponent(image.file_name));
+        var imgUrl = '<?= base_url('uploads/products/') ?>' + encodeURIComponent(image.file_name);
+
+        $lastRow.find('.existing-img').attr('src', imgUrl);
+        $lastRow.find('.link-preview').attr('href', imgUrl);
+        $lastRow.data('original-src', imgUrl);
+
         $lastRow.find('.existing-image-id').val(image.product_image_id);
         $lastRow.find('.replace-image-id').val(image.product_image_id);
         $lastRow.find('.primary-toggle').bootstrapToggle();
@@ -298,12 +328,10 @@ window.addEventListener('load', function () {
         $lastRow.find('.primary-toggle').bootstrapToggle();
     }
 
-    // load semua gambar lama saat halaman pertama dibuka
     existingImages.forEach(function(img) {
         addExistingRow(img);
     });
 
-    // kalau belum ada gambar sama sekali, langsung sediakan 1 baris kosong untuk upload baru
     if (existingImages.length === 0) {
         addNewRow();
         $('#wrapperDetail .row-detail').first().find('.primary-toggle').bootstrapToggle('on');
@@ -343,13 +371,13 @@ window.addEventListener('load', function () {
             }, function(response) {
                 if (response.status === 'success') {
                     removeImageRow($row);
-                    Swal.fire({ 
-                        toast: true, 
-                        position: 'top-end', 
-                        icon: 'success', 
-                        title: response.message, 
-                        showConfirmButton: false, 
-                        timer: 1800 
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: response.message,
+                        showConfirmButton: false,
+                        timer: 1800
                     });
                 } else {
                     Swal.fire('Gagal', response.message || 'Foto gagal dihapus.', 'error');
@@ -370,25 +398,26 @@ window.addEventListener('load', function () {
         }
     }
 
-    // preview gambar BARU saat file dipilih
+    // ===== DIUBAH: preview gambar BARU saat file dipilih =====
     $('#wrapperDetail').on('change', '.image-input', function() {
         var $row = $(this).closest('.row-detail');
         var file = this.files[0];
 
-        var fileName = file ? file.name : 'Pilih file...';
-        $row.find('.file-label').text(fileName);
+        $row.find('.file-label').text(file ? file.name : 'Pilih file...');
         $row.find('.btn-save-image').toggleClass('d-none', !file);
 
         if (file) {
             var reader = new FileReader();
             reader.onload = function(e) {
-                $row.find('.img-preview').attr('src', e.target.result);
+                setPreview($row, e.target.result);
             };
             reader.readAsDataURL(file);
+        } else {
+            resetPreview($row);
         }
-
     });
 
+    // ===== DIUBAH: preview gambar PENGGANTI saat file dipilih =====
     $('#wrapperDetail').on('change', '.replace-image-input', function() {
         var $row = $(this).closest('.row-detail');
         var file = this.files[0];
@@ -399,9 +428,12 @@ window.addEventListener('load', function () {
         if (file) {
             var reader = new FileReader();
             reader.onload = function(e) {
-                $row.find('.img-preview').attr('src', e.target.result);
+                setPreview($row, e.target.result);
             };
             reader.readAsDataURL(file);
+        } else {
+            // batal pilih: kembalikan ke foto asli
+            setPreview($row, $row.data('original-src'));
         }
     });
 
@@ -434,6 +466,10 @@ window.addEventListener('load', function () {
                     if (response.status === 'success') {
                         $row.attr('data-existing', '1');
                         $row.data('existing', 1);
+
+                        // BARU: simpan foto ini sebagai foto asli
+                        $row.data('original-src', $row.find('.img-preview').attr('src'));
+
                         $row.find('.image-input')
                             .removeAttr('name')
                             .removeClass('image-input')
@@ -443,25 +479,25 @@ window.addEventListener('load', function () {
                             .addClass('replace-file-label')
                             .text('Pilih file...');
                         $row.find('.primary-control').removeClass('invisible');
-                        $('<input>').attr({ 
-                            type: 'hidden', 
-                            name: 'existing_image_id[]', 
-                            value: response.image_id 
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'existing_image_id[]',
+                            value: response.image_id
                         }).addClass('existing-image-id').appendTo($row.find('.col-md-5'));
-                        $('<input>').attr({ 
-                            type: 'hidden', 
-                            name: 'replace_image_ids[]', 
-                            value: response.image_id 
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'replace_image_ids[]',
+                            value: response.image_id
                         }).addClass('replace-image-id').appendTo($row.find('.col-md-5'));
                         input.value = '';
                         $button.addClass('d-none').prop('disabled', false).html('<i class="fas fa-check"></i>');
-                        Swal.fire({ 
-                            toast: true, 
-                            position: 'top-end', 
-                            icon: 'success', 
-                            title: response.message, 
-                            showConfirmButton: false, 
-                            timer: 1800 
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: response.message,
+                            showConfirmButton: false,
+                            timer: 1800
                         });
                     } else {
                         $button.prop('disabled', false).html('<i class="fas fa-check"></i>');
@@ -490,18 +526,22 @@ window.addEventListener('load', function () {
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    $row.find('.img-preview').attr('src', response.image_url + '?v=' + Date.now());
+                    // DIUBAH: pakai setPreview + simpan original-src baru
+                    var newUrl = response.image_url + '?v=' + Date.now();
+                    $row.data('original-src', newUrl);
+                    setPreview($row, newUrl);
+
                     $row.find('.replace-file-label').text('Pilih file...');
                     input.value = '';
                     $row.find('.replace-image-id').val(imageId);
                     $button.addClass('d-none').prop('disabled', false).html('<i class="fas fa-check"></i>');
-                    Swal.fire({ 
-                        toast: true, 
-                        position: 'top-end', 
-                        icon: 'success', 
-                        title: response.message, 
-                        showConfirmButton: false, 
-                        timer: 1800 
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: response.message,
+                        showConfirmButton: false,
+                        timer: 1800
                     });
                 } else {
                     $button.prop('disabled', false).html('<i class="fas fa-check"></i>');
@@ -515,13 +555,7 @@ window.addEventListener('load', function () {
         });
     });
 
-    $('#wrapperDetail').on('click', '.preview-image', function() {
-        var imageSource = $(this).attr('src');
-        if (imageSource && imageSource.indexOf('no-image.svg') === -1) {
-            $('#imagePreview').attr('src', imageSource);
-            $('#imagePreviewModal').modal('show');
-        }
-    });
+    // DIHAPUS: handler '.preview-image' (modal) sudah tidak dipakai
 
     // pastikan cuma 1 toggle "Gambar Utama" yang aktif, baik gambar lama maupun baru
     var primaryToggleSyncing = false;
@@ -558,13 +592,13 @@ window.addEventListener('load', function () {
                 product_id: '<?= $product->product_id ?>'
             }, function(response) {
                 if (response.status === 'success') {
-                    Swal.fire({ 
-                        toast: true, 
-                        position: 'top-end', 
-                        icon: 'success', 
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
                         title: response.message,
-                        showConfirmButton: false, 
-                        timer: 1400 
+                        showConfirmButton: false,
+                        timer: 1400
                     });
                 } else {
                     restorePreviousPrimary(previousPrimary, $thisRow);
@@ -586,16 +620,14 @@ window.addEventListener('load', function () {
         primaryToggleSyncing = false;
     }
 
-    // ===== SUBMIT FORM =====
+    // ===== SUBMIT FORM (tidak berubah) =====
     $('#form_edit_product').on('submit', function(e) {
         e.preventDefault();
 
         $('.text-danger').text('');
 
-        // hapus dulu hidden input primary lama kalau ada (jaga-jaga submit ulang)
         $('input[name="is_primary_row_type"], input[name="is_primary_value"]').remove();
 
-        // tentukan baris mana yang jadi primary, kirim tipe + ID/index-nya
         var newImageIndex = 0;
         $('#wrapperDetail .row-detail').each(function() {
             var isExisting = $(this).data('existing') == 1;
