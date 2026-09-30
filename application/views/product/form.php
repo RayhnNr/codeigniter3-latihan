@@ -153,9 +153,10 @@
 <template id="rowTemplate">
     <div class="row-detail form-row align-items-center mb-3 pb-3 border-bottom">
         <div class="col-md-2 text-center">
-            <img src="<?= base_url('assets/img/no-image.svg') ?>" class="img-preview img-thumbnail" alt="No Image Available" style="width: 100px; height: 80px; object-fit: cover;">
+            <a href="<?= base_url('assets/img/no-image.svg') ?>" class="link-preview">
+                <img src="<?= base_url('assets/img/no-image.svg') ?>" class="img-preview img-thumbnail" alt="No Image Available" style="width: 100px; height: 80px; object-fit: cover;">
+            </a>
         </div>
-
         <div class="col-md-5">
             <label class="d-md-none">Pilih Gambar</label>
             <div class="custom-file">
@@ -229,11 +230,23 @@ window.addEventListener('load', function () {
         if (file) {
             var reader = new FileReader();
             reader.onload = function(e) {
-                $row.find('.img-preview').attr('src', e.target.result);
+                $row.find('.img-preview').attr('src', e.target.result).css('cursor', 'pointer');
+                $row.find('.link-preview')
+                    .attr('href', e.target.result)
+                    .attr('data-lightbox', 'preview-row');
             };
             reader.readAsDataURL(file);
+        } else {
+            var noImg = '<?= base_url('assets/img/no-image.svg') ?>';
+            $row.find('.img-preview').attr('src', noImg).css('cursor', 'default');
+            $row.find('.link-preview').attr('href', noImg).removeAttr('data-lightbox');
         }
     });
+
+    $(document).on('click', '.link-preview:not([data-lightbox])', function(e) {
+        e.preventDefault();
+    });
+    
 
     // pastikan cuma 1 toggle "Gambar Utama" yang aktif (karena pakai radio behaviour manual)
     $('#wrapperDetail').on('change', '.primary-toggle', function() {
