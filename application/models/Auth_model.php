@@ -1,7 +1,16 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Auth_model extends CI_Model {
+class Auth_model extends MY_Model {
+    protected $_table_name = 'users';
+
+    protected $_primary_key = 'user_id';
+
+    protected $_primary_filter = 'intval';
+
+    protected $_timestamps = FALSE;
+
+    public $rules = array();
 
     protected $table = 'users';
 
@@ -53,4 +62,4 @@ class Auth_model extends CI_Model {
         return $this->db->where('user_id', $user_id)->update($this->table, $data);
     }
 }
-
+

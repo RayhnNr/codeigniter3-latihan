@@ -4,6 +4,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Employee_model extends CI_Model
 {
     protected $table = 'employees';
+    protected $_table_name = 'employee';
+    protected $_primary_key = 'employee_id';
+    protected $_primary_filter = 'intval';
+    protected $_timestamps = FALSE;
+    public $rules = array();
 
     public function __construct()
     {

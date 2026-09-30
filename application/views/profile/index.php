@@ -1,13 +1,16 @@
 <div class="row">
-    <!-- Kartu Info Profile -->
     <div class="col-md-4">
         <div class="card card-primary card-outline">
             <div class="card-body box-profile text-center">
-                <div class="profile-user-img d-flex align-items-center justify-content-center mx-auto mb-3"
-                    style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);font-size:2.5rem;color:#fff;">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h4 class="profile-username"><?= htmlspecialchars($user->username) ?></h4>
+                <?php if (!empty($employee->photo) && is_file('./uploads/employees/photo/' . basename($employee->photo))): ?>
+                    <a href="<?= base_url('uploads/employees/photo/' . rawurlencode(basename($employee->photo))) ?>" data-lightbox="profile-photo">
+                        <img src="<?= base_url('uploads/employees/photo/' . rawurlencode(basename($employee->photo))) ?>" alt="Foto <?= htmlspecialchars($employee->employee_name ?? $user->username, ENT_QUOTES, 'UTF-8') ?>" class="profile-user-img img-fluid img-circle mb-3" style="width:100px;height:100px;object-fit:cover;cursor:pointer">
+                    </a>
+                <?php else: ?>
+                    <img src="<?= base_url('assets/adminlte/dist/img/user2-160x160.jpg') ?>" alt="Foto profil" class="profile-user-img img-fluid img-circle mb-3" style="width:100px;height:100px;object-fit:cover">
+                <?php endif; ?>
+                <h4 class="profile-username"><?= htmlspecialchars($employee->employee_name ?? $user->username, ENT_QUOTES, 'UTF-8') ?></h4>
+                <p class="text-muted mb-2">@<?= htmlspecialchars($user->username, ENT_QUOTES, 'UTF-8') ?></p>
                 <p class="text-muted">
                     <?php
                     $role_label = !empty($user->role_name) ? $user->role_name : (!empty($user->role) ? ucfirst($user->role) : 'User');
@@ -17,7 +20,6 @@
                         <?= htmlspecialchars($role_label) ?>
                     </span>
                 </p>
-
                 <ul class="list-group list-group-unbordered mt-3 text-left">
                     <li class="list-group-item">
                         <b><i class="fas fa-envelope mr-2 text-primary"></i> Email</b>
@@ -40,8 +42,69 @@
         </div>
     </div>
 
-    <!-- Kartu Ubah Password -->
     <div class="col-md-8">
+        <div class="card card-primary card-outline mb-2">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-edit mr-2"></i> Edit Profil</h5>
+            </div>
+            <div class="card-body">
+                <?= form_open_multipart('profile/update', ['id' => 'form-edit-profile']) ?>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="profile-username">Username</label>
+                            <input type="text" class="form-control" id="profile-username" name="username" maxlength="50" value="<?= htmlspecialchars($user->username, ENT_QUOTES, 'UTF-8') ?>">
+                            <small class="text-danger" id="error_username"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-email">Email</label>
+                            <input type="email" class="form-control" id="profile-email" name="email" maxlength="255" value="<?= htmlspecialchars($user->email ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            <small class="text-danger" id="error_email"></small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="profile-phone">Nomor HP</label>
+                            <input type="text" class="form-control" id="profile-phone" name="nomor_hp" maxlength="20" value="<?= htmlspecialchars($user->nomor_hp ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            <small class="text-danger" id="error_nomor_hp"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-name">Nama</label>
+                            <input type="text" class="form-control" id="profile-name" name="employee_name" maxlength="100" value="<?= htmlspecialchars($employee->employee_name ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            <small class="text-danger" id="error_employee_name"></small>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="profile-photo">Foto</label>
+                            <div class="row align-items-center">
+                                <div class="col-sm-4 col-md-3 mb-2 mb-sm-0" id="profile-photo-preview">
+                                    <?php if (!empty($employee->photo) && is_file('./uploads/employees/photo/' . basename($employee->photo))): ?>
+                                        <a href="<?= base_url('uploads/employees/photo/' . rawurlencode(basename($employee->photo))) ?>" data-lightbox="profile-photo">
+                                            <img src="<?= base_url('uploads/employees/photo/' . rawurlencode(basename($employee->photo))) ?>" alt="Foto profil" class="img-thumbnail" style="width:120px;height:120px;object-fit:cover;cursor:pointer">
+                                        </a>
+                                    <?php else: ?>
+                                        <img src="<?= base_url('assets/adminlte/dist/img/user2-160x160.jpg') ?>" alt="Foto profil" class="img-thumbnail" style="width:120px;height:120px;object-fit:cover">
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-sm-8 col-md-9">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="profile-photo" name="photo" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                                        <label class="custom-file-label file-label" for="profile-photo">Pilih foto...</label>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Format JPG, JPEG, atau PNG. Maksimal 2 MB.</small>
+                                    <small class="text-danger d-block" id="error_photo"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <small class="text-danger d-block mb-2" id="error_profile"></small>
+                <button type="submit" class="btn btn-primary" id="btn-save-profile"><i class="fas fa-save mr-1"></i> Simpan Profil</button>
+                <?= form_close() ?>
+            </div>
+        </div>
+    <!-- Kartu Ubah Password -->
         <div class="card card-primary card-outline">
             <div class="card-header">
                 <h5 class="mb-0"><i class="fas fa-lock mr-2"></i> Ubah Password</h5>
@@ -110,6 +173,59 @@
 
 <script>
 window.addEventListener('load', function(){
+
+    $('#profile-photo').on('change', function(){
+        const file = this.files[0];
+        const $fileLabel = $(this).siblings('.file-label');
+        $('#error_photo').text('');
+        $fileLabel.text(file ? file.name : 'Pilih foto...');
+        if (!file) return;
+        if (!['image/jpeg', 'image/png'].includes(file.type)) {
+            $('#error_photo').text('Format foto harus JPG, JPEG, atau PNG.');
+            this.value = '';
+            $fileLabel.text('Pilih foto...');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            $('#error_photo').text('Ukuran foto maksimal 2 MB.');
+            this.value = '';
+            $fileLabel.text('Pilih foto...');
+            return;
+        }
+        const previewUrl = URL.createObjectURL(file);
+        $('#profile-photo-preview').html(`<a href="${previewUrl}" data-lightbox="profile-photo"><img src="${previewUrl}" alt="Pratinjau foto profil" class="img-thumbnail" style="width:120px;height:120px;object-fit:cover;cursor:pointer"></a>`);
+    });
+
+    $('#form-edit-profile').on('submit', function(e){
+        e.preventDefault();
+        $('#form-edit-profile .text-danger').text('');
+        $.ajax({
+            url: '<?= base_url('profile/update') ?>',
+            type: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            beforeSend: function(){
+                $('#btn-save-profile').prop('disabled', true);
+                Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            },
+            success: function(res){
+                if (res.status) {
+                    Swal.fire('Berhasil', 'Profil berhasil diperbarui.', 'success').then(() => window.location.reload());
+                } else {
+                    Swal.close();
+                    $.each(res.errors || {}, (field, message) => $('#error_' + field).text(message));
+                }
+            },
+            error: function(){
+                Swal.fire('Gagal', 'Terjadi kesalahan pada server.', 'error');
+            },
+            complete: function(){
+                $('#btn-save-profile').prop('disabled', false);
+            }
+        });
+    });
 
     // Toggle show/hide password
     $(document).on('click', '.btn-toggle-pw', function(){
