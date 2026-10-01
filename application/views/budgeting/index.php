@@ -1,22 +1,4 @@
-<?php if ($this->session->flashdata('success')): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle mr-1"></i> <?= $this->session->flashdata('success'); ?>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-<?php endif; ?>
-
-<?php if ($this->session->flashdata('error')): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-circle mr-1"></i> <?= $this->session->flashdata('error'); ?>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-<?php endif; ?>
-
-<div class="card card-primary card-outline shadow-sm">
+<div class="card">
     <div class="card-header">
         <h3 class="card-title font-weight-bold">
             <i class="fas fa-wallet mr-1"></i> Data Budgeting
@@ -70,7 +52,7 @@
                         <td class="text-center align-middle"><?php echo $no++; ?></td>
                         <td class="align-middle">
                             <!-- Nomor Budgeting berbentuk Button btn-block untuk membuka modal detail -->
-                            <button type="button" class="btn btn-outline-primary btn-sm btn-block font-weight-bold text-left" 
+                            <button type="button" class="btn btn-primary btn-sm btn-block font-weight-bold text-left" 
                                 onclick="viewDetail('<?php echo (int) $row->budgeting_id; ?>')" title="Klik untuk lihat detail">
                                 <i class="fas fa-file-invoice mr-1"></i> <?php echo $noBdg; ?>
                             </button>

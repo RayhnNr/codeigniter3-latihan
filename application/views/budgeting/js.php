@@ -42,13 +42,13 @@ $(function() {
 
 // Fungsi untuk membuka Modal Detail Budgeting
 function viewDetail(id) {
-    Swal.fire({
-        title: 'Memuat Rincian...',
-        allowOutsideClick: false,
-        didOpen: function() {
-            Swal.showLoading();
-        }
-    });
+    // Swal.fire({
+    //     title: 'Memuat Rincian...',
+    //     allowOutsideClick: false,
+    //     didOpen: function() {
+    //         Swal.showLoading();
+    //     }
+    // });
 
     $.ajax({
         url: '<?= base_url("budgeting/get_data/"); ?>' + id,

@@ -34,7 +34,7 @@ function parseFormattedNumber(val) {
 
 $(function() {
     // Inisialisasi Select2
-    $('#employee_id, #department_id').select2({
+    $('#employee_id, #department_id, .select-payment-type').select2({
         theme: 'bootstrap4',
         width: '100%',
         placeholder: "Pilih",
@@ -166,15 +166,16 @@ function submitBudgetingForm() {
             $btnSubmit.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Simpan Budgeting');
 
             if (response.status === true) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: response.message || 'Data budgeting berhasil disimpan.',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(function() {
-                    window.location.href = response.redirect || '<?= base_url("budgeting"); ?>';
-                });
+                window.location.href = response.redirect || '<?= base_url("budgeting"); ?>';
+                // Swal.fire({
+                //     icon: 'success',
+                //     title: 'Berhasil',
+                //     text: response.message || 'Data budgeting berhasil disimpan.',
+                //     timer: 1500,
+                //     showConfirmButton: false
+                // }).then(function() {
+                    
+                // });
             } else {
                 if (response.errors) {
                     displayValidationErrors(response.errors);
@@ -241,7 +242,13 @@ function addDetailRow(data) {
         </tr>
     `;
 
-    $('#wrapper-detail-rows').append(rowHtml);
+    var $row = $(rowHtml).appendTo('#wrapper-detail-rows');
+    $row.find('.select-payment-type').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        placeholder: 'Pilih',
+        allowClear: true
+    });
     reindexRows();
     calculateTotal();
 }

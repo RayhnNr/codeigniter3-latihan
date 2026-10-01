@@ -1,14 +1,11 @@
 <div class="row">
     <div class="col-12">
-        <div class="card card-primary card-outline shadow-sm">
+        <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title font-weight-bold">
-                        <i class="fas fa-file-invoice-dollar mr-1"></i> <?= html_escape($title); ?>
+                        <i class="fas fa-file-invoice-dollar text-primary mr-1"></i> <?= html_escape($title); ?>
                     </h3>
-                    <a href="<?= base_url('budgeting'); ?>" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-arrow-left mr-1"></i> Kembali ke Daftar
-                    </a>
                 </div>
             </div>
 
@@ -87,7 +84,7 @@
                     <!-- Detail Section -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="font-weight-bold mb-0 text-dark">
-                            <i class="fas fa-list-ol mr-1 text-primary"></i> Detail Item Budgeting
+                            <i class="fas fa-list mr-1 text-primary"></i> Detail Item Budgeting
                         </h5>
                         <button type="button" class="btn btn-sm btn-success" id="btn_add_row">
                             <i class="fas fa-plus mr-1"></i> Tambah Baris
@@ -118,7 +115,7 @@
                                                 <input type="text" name="item_description[]" class="form-control form-control-sm input-item-desc" placeholder="Nama / deskripsi item..." value="<?= html_escape($d->item_description); ?>" required>
                                             </td>
                                             <td>
-                                                <select name="payment_type[]" class="form-control form-control-sm select-payment-type" required>
+                                                <select name="payment_type[]" class="form-control form-control-sm select-payment-type select2" required>
                                                     <?php foreach ($payment_types as $pt): ?>
                                                         <option value="<?= $pt; ?>" <?= ($pt === $d->payment_type) ? 'selected' : ''; ?>><?= $pt; ?></option>
                                                     <?php endforeach; ?>
@@ -156,7 +153,7 @@
                 </div>
 
                 <div class="card-footer d-flex justify-content-end">
-                    <a href="<?= base_url('budgeting'); ?>" class="btn btn-secondary mr-2">
+                    <a href="<?= base_url('budgeting'); ?>" class="btn btn-danger mr-2">
                         <i class="fas fa-times mr-1"></i> Batal
                     </a>
                     <button type="submit" class="btn btn-primary" id="btn_save_submit">
