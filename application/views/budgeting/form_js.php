@@ -33,6 +33,11 @@ function parseFormattedNumber(val) {
 }
 
 $(function() {
+    $('.datepicker').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true,
+        todayHighlight: true,
+    });
     // Inisialisasi Select2
     $('#employee_id, #department_id, .select-payment-type').select2({
         theme: 'bootstrap4',

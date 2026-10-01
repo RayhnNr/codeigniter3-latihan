@@ -12,6 +12,20 @@ class MY_Controller extends CI_Controller {
             redirect('auth');
         }
 
+        $controller = strtolower($this->router->fetch_class());
+        $method = strtolower($this->router->fetch_method());
+        if ($controller !== 'dashboard') {
+            $this->load->model('Menu_model');
+            if (!$this->Menu_model->has_view_access_for_route(
+                $controller,
+                $method,
+                $this->session->userdata('role_id'),
+                $this->session->userdata('role')
+            )) {
+                show_error('Anda tidak punya akses ke halaman ini.', 403, 'Akses Ditolak');
+            }
+        }
+
         // Selalu inject info user ke semua view
         $this->data['logged_user'] = [
             'user_id'     => $this->session->userdata('user_id'),

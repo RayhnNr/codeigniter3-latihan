@@ -24,7 +24,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="budget_date">Tanggal <span class="text-danger">*</span></label>
-                                <input type="date" name="budget_date" id="budget_date" class="form-control" 
+                                <input type="date" name="budget_date" id="budget_date" class="form-control datepicker" 
                                     value="<?= !empty($budgeting->budget_date) ? html_escape($budgeting->budget_date) : date('Y-m-d'); ?>">
                                 <small class="text-danger error-feedback" id="error_budget_date"></small>
                             </div>
@@ -82,7 +82,7 @@
                     <hr class="my-4">
 
                     <!-- Detail Section -->
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="font-weight-bold mb-0 text-dark">
                             <i class="fas fa-list mr-1 text-primary"></i> Detail Item Budgeting
                         </h5>

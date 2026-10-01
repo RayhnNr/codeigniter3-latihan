@@ -85,9 +85,7 @@ class Menu_model extends CI_Model{
             ->get()
             ->result();
 
-        $is_unrestricted = in_array(strtolower((string) $role_slug), ['superadmin', 'admin'], true)
-            || in_array((int) $role_id, [1, 2], true);
-        if ($is_unrestricted) {
+        if ($this->is_unrestricted_role($role_id, $role_slug)) {
             return $menus;
         }
 
@@ -118,6 +116,72 @@ class Menu_model extends CI_Model{
         return array_values(array_filter($menus, function ($menu) use ($allowed) {
             return isset($allowed[(int) $menu->id]);
         }));
+    }
+
+    public function has_view_access_for_route($controller, $method, $role_id, $role_slug = '') {
+        if ($this->is_unrestricted_role($role_id, $role_slug)) {
+            return true;
+        }
+
+        $menus = $this->db
+            ->select('id, url, status')
+            ->get($this->table)
+            ->result();
+
+        $configured_controller_ids = [];
+        $controller_menu_ids = [];
+        $method_menu_ids = [];
+        foreach ($menus as $menu) {
+            $url = strtolower(trim((string) $menu->url, '/'));
+            if ($url === '' || $url === 'javascript:;') {
+                continue;
+            }
+
+            $menu_parts = explode('/', $url);
+            $menu_controller = $menu_parts[0];
+            if ($menu_controller !== strtolower((string) $controller)) {
+                continue;
+            }
+
+            $menu_id = (int) $menu->id;
+            $configured_controller_ids[] = $menu_id;
+            if (!isset($menu_parts[1])) {
+                $controller_menu_ids[] = $menu_id;
+            } elseif ($menu_parts[1] === strtolower((string) $method)) {
+                $method_menu_ids[] = $menu_id;
+            }
+        }
+
+        // Controllers not represented in the menu table may be utility pages.
+        if (empty($configured_controller_ids)) {
+            return true;
+        }
+
+        $matched_menu_ids = !empty($controller_menu_ids) ? $controller_menu_ids : $method_menu_ids;
+        if (empty($matched_menu_ids)) {
+            return false;
+        }
+
+        $active_menu_ids = [];
+        foreach ($menus as $menu) {
+            if ((int) $menu->status === 1 && in_array((int) $menu->id, $matched_menu_ids, true)) {
+                $active_menu_ids[] = (int) $menu->id;
+            }
+        }
+        if (empty($active_menu_ids)) {
+            return false;
+        }
+
+        return $this->db
+            ->where('role_id', (int) $role_id)
+            ->where('can_view', 1)
+            ->where_in('menu_id', $active_menu_ids)
+            ->count_all_results('role_menu_permissions') > 0;
+    }
+
+    private function is_unrestricted_role($role_id, $role_slug) {
+        return in_array(strtolower((string) $role_slug), ['superadmin', 'admin'], true)
+            || in_array((int) $role_id, [1, 2], true);
     }
 
     public function get_by_id($id) {
