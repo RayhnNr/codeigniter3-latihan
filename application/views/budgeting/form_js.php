@@ -217,18 +217,18 @@ function addDetailRow(data) {
     var rowHtml = `
         <tr class="detail-row">
             <td class="text-center align-middle row-number"></td>
-            <td>
+            <td class="align-middle">
                 <input type="text" name="item_description[]" class="form-control form-control-sm input-item-desc" placeholder="Nama / deskripsi item..." value="${escapeHtml(desc)}" required>
             </td>
-            <td>
+            <td class="align-middle">
                 <select name="payment_type[]" class="form-control form-control-sm select-payment-type" required>
                     ${optionsHtml}
                 </select>
             </td>
-            <td>
+            <td class="align-middle">
                 <input type="text" name="qty[]" class="form-control form-control-sm text-center input-qty" value="${qty}" placeholder="1" required>
             </td>
-            <td>
+            <td class="align-middle">
                 <input type="text" name="unit_price[]" class="form-control form-control-sm text-right input-unit-price" value="${formattedPrice}" placeholder="0" required>
             </td>
             <td class="text-right align-middle font-weight-bold row-amount">

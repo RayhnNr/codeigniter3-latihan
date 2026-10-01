@@ -189,7 +189,7 @@ function deleteBudgeting(id) {
                             timer: 1500,
                             showConfirmButton: false
                         }).then(function() {
-                            window.location.reload();
+                            
                         });
                     } else {
                         Swal.fire({

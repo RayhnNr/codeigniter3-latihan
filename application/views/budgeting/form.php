@@ -14,10 +14,10 @@
 
                 <div class="card-body">
                     <!-- Alert Error Validasi Server -->
-                    <div class="alert alert-danger d-none" id="alert-error-container">
+                    <!-- <div class="alert alert-danger d-none" id="alert-error-container">
                         <h6 class="font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Terjadi Kesalahan Validasi:</h6>
                         <ul class="mb-0 pl-3" id="error-list"></ul>
-                    </div>
+                    </div> -->
 
                     <!-- Header Inputs -->
                     <div class="row">
@@ -25,14 +25,14 @@
                             <div class="form-group">
                                 <label for="budget_date">Tanggal <span class="text-danger">*</span></label>
                                 <input type="date" name="budget_date" id="budget_date" class="form-control" 
-                                    value="<?= !empty($budgeting->budget_date) ? html_escape($budgeting->budget_date) : date('Y-m-d'); ?>" required>
+                                    value="<?= !empty($budgeting->budget_date) ? html_escape($budgeting->budget_date) : date('Y-m-d'); ?>">
                                 <small class="text-danger error-feedback" id="error_budget_date"></small>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="employee_id">Karyawan <span class="text-danger">*</span></label>
-                                <select name="employee_id" id="employee_id" class="form-control select2" style="width: 100%;" required>
+                                <select name="employee_id" id="employee_id" class="form-control select2" style="width: 100%;">
                                     <option value="">-- Pilih Karyawan --</option>
                                     <?php if (!empty($employees)): ?>
                                         <?php foreach ($employees as $emp): ?>
@@ -51,7 +51,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="department_id">Departemen <span class="text-danger">*</span></label>
-                                <select name="department_id" id="department_id" class="form-control select2" style="width: 100%;" required>
+                                <select name="department_id" id="department_id" class="form-control select2" style="width: 100%;">
                                     <option value="">-- Pilih Departemen --</option>
                                     <?php if (!empty($departments)): ?>
                                         <?php foreach ($departments as $dept): ?>
@@ -111,20 +111,20 @@
                                     <?php foreach ($detail as $d): ?>
                                         <tr class="detail-row">
                                             <td class="text-center align-middle row-number"></td>
-                                            <td>
+                                            <td class="align-middle">
                                                 <input type="text" name="item_description[]" class="form-control form-control-sm input-item-desc" placeholder="Nama / deskripsi item..." value="<?= html_escape($d->item_description); ?>" required>
                                             </td>
-                                            <td>
+                                            <td class="align-middle">
                                                 <select name="payment_type[]" class="form-control form-control-sm select-payment-type select2" required>
                                                     <?php foreach ($payment_types as $pt): ?>
                                                         <option value="<?= $pt; ?>" <?= ($pt === $d->payment_type) ? 'selected' : ''; ?>><?= $pt; ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
                                             </td>
-                                            <td>
+                                            <td class="align-middle">
                                                 <input type="text" name="qty[]" class="form-control form-control-sm text-center input-qty" value="<?= (float) $d->qty; ?>" required>
                                             </td>
-                                            <td>
+                                            <td class="align-middle">
                                                 <input type="text" name="unit_price[]" class="form-control form-control-sm text-right input-unit-price" value="<?= number_format($d->unit_price, 0, ',', '.'); ?>" required>
                                             </td>
                                             <td class="text-right align-middle font-weight-bold row-amount">
