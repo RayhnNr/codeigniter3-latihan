@@ -82,6 +82,16 @@ class MY_Model extends CI_Model{
     }
 
 
+    public function insert_batch($rows) {
+        return $this->db->insert_batch($this->_table_name, $rows);
+    }
+
+    public function delete_by($where) {
+        $this->db->where($where);
+        return $this->db->delete($this->_table_name);
+    }
+
+
 
 
 
