@@ -5,16 +5,24 @@ class MY_Controller extends CI_Controller {
 
     protected $data = [];
 
+    // Controller yang tidak perlu dicek hak akses menunya
+    protected $_skip_access_check = ['dashboard', 'error_page'];
+
     public function __construct() {
         parent::__construct();
 
+        $this->load->library('session');
+
+        // 1. Wajib login
         if (!$this->session->userdata('user_id')) {
-            redirect('auth');
+            $this->_deny(401, 'Sesi berakhir, silakan login kembali.', 'auth');
         }
 
+        // 2. Cek hak akses menu
         $controller = strtolower($this->router->fetch_class());
-        $method = strtolower($this->router->fetch_method());
-        if ($controller !== 'dashboard') {
+        $method     = strtolower($this->router->fetch_method());
+
+        if (!in_array($controller, $this->_skip_access_check, true)) {
             $this->load->model('Menu_model');
             if (!$this->Menu_model->has_view_access_for_route(
                 $controller,
@@ -22,11 +30,11 @@ class MY_Controller extends CI_Controller {
                 $this->session->userdata('role_id'),
                 $this->session->userdata('role')
             )) {
-                show_error('Anda tidak punya akses ke halaman ini.', 403, 'Akses Ditolak');
+                $this->_deny(403, 'Anda tidak punya akses ke halaman ini.', 'error_page/forbidden');
             }
         }
 
-        // Selalu inject info user ke semua view
+        // 3. Selalu inject info user ke semua view
         $this->data['logged_user'] = [
             'user_id'     => $this->session->userdata('user_id'),
             'employee_id' => $this->session->userdata('employee_id'),
@@ -47,20 +55,32 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function only_admin() {
-        $role = $this->session->userdata('role');
+        $role    = $this->session->userdata('role');
         $role_id = $this->session->userdata('role_id');
         if ($role !== 'admin' && $role_id != 1) {
-            $this->session->set_flashdata('error', 'Anda tidak punya akses ke halaman ini.');
-            redirect('dashboard');
+            $this->_deny(403, 'Anda tidak punya akses ke halaman ini.', 'error_page/forbidden');
         }
     }
 
     protected function only_staff_or_admin() {
-        $role = $this->session->userdata('role');
+        $role    = $this->session->userdata('role');
         $role_id = $this->session->userdata('role_id');
         if (!in_array($role, ['admin', 'staff']) && $role_id != 1) {
-            $this->session->set_flashdata('error', 'Anda tidak punya akses ke halaman ini.');
-            redirect('dashboard');
+            $this->_deny(403, 'Anda tidak punya akses ke halaman ini.', 'error_page/forbidden');
         }
+    }
+
+    // Tolak akses: JSON untuk AJAX, redirect untuk request biasa
+    protected function _deny($code, $message, $redirect_to) {
+        if ($this->input->is_ajax_request()) {
+            $this->output
+                ->set_status_header($code)
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => false, 'message' => $message]))
+                ->_display();
+            exit;
+        }
+
+        redirect($redirect_to);
     }
 }
