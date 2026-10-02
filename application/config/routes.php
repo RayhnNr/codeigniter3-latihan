@@ -58,3 +58,6 @@ $route['product'] = 'product/index';
 
 $route['auth/forgot-password']  = 'auth/forgot_password';
 $route['auth/reset-password']   = 'auth/reset_password';
+
+
+$route['404_override'] = 'error_page/not_found';
