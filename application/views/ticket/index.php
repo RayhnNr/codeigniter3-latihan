@@ -266,7 +266,7 @@ window.addEventListener('load', function () {
                 $('#modalPemohon').text(d.nama_pemohon);
                 $('#modalDepartemen').text(d.department_name);
                 $('#modalJudul').text(d.judul);
-                $('#modalDeskripsi').text(d.deskripsi);
+                $('#modalDeskripsi').html(d.deskripsi);
                 $('#modalPrioritas').html(prioritasBadge(d.prioritas));
                 $('#modalStatus').html(statusBadge(d.status));
                 $('#modalCreateBy').text(d.created_by_username ? d.created_by_username : '-');

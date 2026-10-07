@@ -53,7 +53,7 @@
           </div>
           <div class="form-group">
             <label>Deskripsi Masalah</label>
-            <textarea name="deskripsi" class="form-control" rows="4"><?= set_value('deskripsi', $ticket->deskripsi) ?></textarea>
+            <textarea name="deskripsi" id="comment" class="form-control" rows="4"><?= set_value('deskripsi', $ticket->deskripsi) ?></textarea>
             <small class="text-danger" id="error_deskripsi"><?= form_error('deskripsi') ?></small>
           </div>
         </div>

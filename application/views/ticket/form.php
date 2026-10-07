@@ -68,6 +68,7 @@
                 <div class="form-group">
                     <label>Deskripsi Masalah</label>
                     <textarea name="deskripsi"
+                            id="comment"
                             class="form-control"
                             rows="4"><?= set_value('deskripsi') ?></textarea>
 
