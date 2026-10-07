@@ -101,6 +101,7 @@
                     <div class="form-group">
                         <label>Deskripsi</label>
                         <textarea name="description"
+                            id="comment"
                             class="form-control"
                             rows="5"></textarea>
                         <small class="text-danger" id="error_description"></small>

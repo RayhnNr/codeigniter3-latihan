@@ -361,7 +361,7 @@ function detailData(id) {
             $('#detail-status').html(statusBadge);
 
             $('#detail-create-by').text(data.created_by_username ? data.created_by_username : '-');
-            $('#detail-deskripsi').text(data.description);
+            $('#detail-deskripsi').html(data.description);
             try {
                 $('#detail-qrcode').empty();
 

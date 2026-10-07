@@ -114,6 +114,7 @@
                         <label>Deskripsi</label>
                         <textarea name="description"
                             class="form-control"
+                            id="comment"
                             rows="5"><?= $product->description ?></textarea>
                         <small class="text-danger" id="error_description"></small>
                     </div>
