@@ -60,6 +60,9 @@
 <!-- LightBox -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 
+<!-- Summernote -->
+ <script src="<?= base_url('assets/adminlte/plugins/summernote/summernote-bs4.min.js'); ?>"></script>
+
 <!-- jQuery Chained Remote (dependent/cascading dropdown via AJAX) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-chained/1.0.1/jquery.chained.remote.min.js"></script>
 
@@ -98,6 +101,16 @@ $(document).ready(function () {
       maxWidth: 600,
       maxHeight: 600
   });
+});
+
+$(document).ready(function () {
+    $('#comment').summernote({
+        height: 200,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['para', ['ul', 'ol', 'paragraph']]
+        ]
+    });
 });
 
     

@@ -43,6 +43,10 @@
   <!-- LightBox -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
 
+  <!-- Summernote -->
+  <link rel="stylesheet" href="<?= base_url('assets/adminlte/plugins/summernote/summernote-bs4.min.css'); ?>">
+  
+
   <style>
     .select2-container--default .select2-selection--single {
         height: 38px !important;
