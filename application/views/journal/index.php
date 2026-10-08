@@ -31,7 +31,14 @@
                     ?>
                     <tr>
                         <td><?php echo $no++; ?></td>
-                        <td><?php echo html_escape($row->journal_no); ?></td>
+                        <td>
+                            <!-- Lihat: selalu tampil (buka modal tabel) -->
+                            <button class="btn btn-block btn-sm btn-primary" title="Lihat Detail"
+                                    onclick="viewJournal('<?php echo $jid; ?>')">
+                                <i class="fas fa-eye"></i> <?php echo html_escape($row->journal_no); ?>
+                            </button>
+                        </td>
+                        <!-- <td><?php echo html_escape($row->journal_no); ?></td> -->
                         <td><?php echo date('d-m-Y', strtotime($row->journal_date)); ?></td>
                         <td><?php echo html_escape($row->description); ?></td>
                         <td class="text-right"><?php echo number_format((float) $row->total_debit,  2, ',', '.'); ?></td>
@@ -42,12 +49,6 @@
                             </span>
                         </td>
                         <td>
-                            <!-- Lihat: selalu tampil (buka modal tabel) -->
-                            <button class="btn btn-sm btn-secondary" title="Lihat Detail"
-                                    onclick="viewJournal('<?php echo $jid; ?>')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-
                             <?php if ($is_draft): ?>
                                 <!-- Edit: link ke halaman form -->
                                 <a href="<?php echo base_url('journal/edit/' . $jid); ?>"
