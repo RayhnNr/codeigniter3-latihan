@@ -61,7 +61,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 
 <!-- Summernote -->
- <script src="<?= base_url('assets/adminlte/plugins/summernote/summernote-bs4.min.js'); ?>"></script>
+<script src="<?= base_url('assets/adminlte/plugins/summernote/summernote-bs4.min.js'); ?>"></script>
 
 <!-- jQuery Chained Remote (dependent/cascading dropdown via AJAX) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-chained/1.0.1/jquery.chained.remote.min.js"></script>
@@ -70,7 +70,7 @@
 
 <?php
 if (isset($extra_script)) : ?>
-  <script src="<?= base_url($extra_script) ?>"></script>
+    <script src="<?= base_url($extra_script) ?>"></script>
 <?php endif; ?>
 
 <script>
@@ -93,14 +93,14 @@ $(document).ready(function () {
     $('[data-widget="sidebar-search"]').SidebarSearch();
 
     lightbox.option({
-      resizeDuration: 200,
-      wrapAround: true,
-      albumLabel: 'Foto %1 dari %2',
-      fadeDuration: 300,
-      fitImagesInViewport: true,
-      maxWidth: 600,
-      maxHeight: 600
-  });
+        resizeDuration: 200,
+        wrapAround: true,
+        albumLabel: 'Foto %1 dari %2',
+        fadeDuration: 300,
+        fitImagesInViewport: true,
+        maxWidth: 600,
+        maxHeight: 600
+    });
 });
 
 $(document).ready(function () {
@@ -112,9 +112,9 @@ $(document).ready(function () {
         ]
     });
 });
-
-    
 </script>
+
+<?php if (isset($page_js)) echo $page_js; ?>
 
 </body>
 </html>
