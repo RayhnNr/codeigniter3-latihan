@@ -98,7 +98,9 @@ function sanitizeNumericInput(input) {
     input.setSelectionRange(newCaret, newCaret);
 }
 
-function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+function round2(n) { 
+    return Math.round((n + Number.EPSILON) * 100) / 100;
+ }
 
 function renumber() {
     $('#wrapper-detail-rows .detail-row').each(function (i) {
@@ -130,7 +132,12 @@ function calcTotals() {
 function addRow() {
     var $row = $($('#row-template').html());
     $('#wrapper-detail-rows').append($row);
-    $row.find('.select-product').select2({ placeholder: '-- Pilih Produk --' });
+    $row.find('.select-product').select2({ 
+        theme: 'bootstrap4',
+        placeholder: '-- Pilih Produk --',
+        width: '100%',
+        allowClear: true,
+    });
     renumber();
     calcTotals();
 }
@@ -141,7 +148,10 @@ $(function () {
         $('#example1').DataTable({
             scrollX: true,
             autoWidth: false,
-            columnDefs: [{ targets: 'no-sort', orderable: false }]
+            columnDefs: [{ 
+                targets: 'no-sort', 
+                orderable: false 
+            }]
         });
 
         $('#example1').on('click', '.btn-delete', function () {
@@ -173,7 +183,14 @@ $(function () {
     // ===== Halaman form =====
     if (!$('#form-sales-order').length) return;
 
-    $('.select2').select2();
+    $('.select2').select2(
+        {
+            theme: 'bootstrap4',
+            placeholder: '-- Pilih --',
+            width: '100%',
+            allowClear: true,
+        }
+    );
     $('.input-price').each(function () {
         formatPriceInput(this, true);
     });
